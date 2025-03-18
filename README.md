@@ -1,18 +1,29 @@
-# auto-repair-system
-毕设《汽车维修管理系统设计》
+# Auto Repair System
+The graduation design.
 
-### 1 项目简介
-
-...
-
-### 2 项目结构
+## Introduction
 
 ...
 
-### 3 技术栈
+## Structure
 
-Java | Spring Boot | MySQL | HTML | CSS | JavaScript | Vue.js
+...
 
-### 4 开源协议
+## Tech Stack
+
+### Backend
+
+- Java – High-performance, object-oriented programming language
+- Spring Boot – Framework for building scalable backend applications
+
+### Frontend
+
+- Vue.js – Progressive JavaScript framework for building UI
+
+### Database
+
+- MySQL – Relational database for data storage and management
+
+## LICENSE
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
