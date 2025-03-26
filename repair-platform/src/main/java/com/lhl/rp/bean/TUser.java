@@ -3,13 +3,20 @@ package com.lhl.rp.bean;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 用户表
  * t_user
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class TUser implements Serializable {
 
     @Serial
