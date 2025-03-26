@@ -8,10 +8,3 @@ spring:
     username: root
     password: root
     type: com.zaxxer.hikari.HikariDataSource
-
-mybatis:
-  configuration:
-    # 开启驼峰映射
-    map-underscore-to-camel-case: true
-  mapper-locations: classpath:/mapper/*.xml
-  type-aliases-package: com.lhl.rp.bean

@@ -2,6 +2,8 @@ package com.lhl.rp.filter;
 
 import com.lhl.rp.bean.LoginUser;
 import com.lhl.rp.util.JwtUtil;
+import com.lhl.rp.util.TokenCacheHolder;
+import com.lhl.rp.util.TokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,12 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String token = request.getHeader("Authorization");
+        String token = TokenUtil.resolveToken(request);
 
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-
-            if (JwtUtil.verify(token)) {
+        if (token != null) {
+            // 令牌没用被篡改 并且 Token 在缓存中心有效
+            if (JwtUtil.verify(token) && TokenCacheHolder.exists(token)) {
                 String username = JwtUtil.getUsername(token);
 
                 LoginUser loginUser = (LoginUser) userDetailsService.loadUserByUsername(username);

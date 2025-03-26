@@ -6,6 +6,7 @@ import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author WIFI连接超时
@@ -14,14 +15,15 @@ import java.util.Date;
  */
 public class JwtUtil {
 
-    private static final String SECRET = "repair-platform-key-d9f5fd46-1947-4588-aad5-8ca3fe9d70c2";
+    // private static final String SECRET = "repair-platform-key-d9f5fd46-1947-4588-aad5-8ca3fe9d70c2";
+    private static final String SECRET = "repair-platform-key-" + UUID.randomUUID();
 
-    public static String createToken(String username) {
+    public static String createToken(String username, long ttlMillis) {
         JWTSigner signer = JWTSignerUtil.hs256(SECRET.getBytes());
         return JWT.create()
                 .setPayload("username", username)
                 .setIssuedAt(new Date())
-                .setExpiresAt(new Date(System.currentTimeMillis() + 2 * 60 * 60 * 1000)) // 2小时有效
+                .setExpiresAt(new Date(System.currentTimeMillis() + ttlMillis))
                 .sign(signer);
     }
 

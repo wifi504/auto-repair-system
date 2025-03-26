@@ -69,8 +69,8 @@ public class SecurityConfig {
                 // 禁用 Session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 放行登录接口
-                        .requestMatchers("/api/login").permitAll()
+                        // 放行登录接口（业务接口都在二级路径下，一级路径默认 public）
+                        .requestMatchers("/api/*").permitAll()
                         // 其他接口需要认证
                         .anyRequest().authenticated()
                 )
