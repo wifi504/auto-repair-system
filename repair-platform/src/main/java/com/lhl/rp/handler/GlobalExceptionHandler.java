@@ -7,7 +7,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Objects;
 
 /**
  * 全局异常处理类
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
     // 参数校验错误（Bean校验）
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public R<?> handleValidation(MethodArgumentNotValidException e) {
-        String msg = e.getBindingResult().getFieldError().getDefaultMessage();
+        String msg = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
         return R.error(ResultCode.FAIL, msg);
     }
 

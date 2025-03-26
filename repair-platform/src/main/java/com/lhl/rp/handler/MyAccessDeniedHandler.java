@@ -3,7 +3,6 @@ package com.lhl.rp.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
