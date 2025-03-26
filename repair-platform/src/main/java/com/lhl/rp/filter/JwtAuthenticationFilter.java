@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = TokenUtil.resolveToken(request);
 
         if (token != null) {
-            // 令牌没用被篡改 并且 Token 在缓存中心有效
+            // 令牌没有被篡改 并且 Token 在缓存中心有效
             if (JwtUtil.verify(token) && TokenCacheHolder.exists(token)) {
                 String username = JwtUtil.getUsername(token);
 
