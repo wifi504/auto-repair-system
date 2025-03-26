@@ -1,0 +1,88 @@
+package com.lhl.rp.config;
+
+import com.lhl.rp.filter.JwtAuthenticationFilter;
+import com.lhl.rp.handler.MyAccessDeniedHandler;
+import com.lhl.rp.handler.MyAuthenticationEntryPoint;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ * @author WIFI连接超时
+ * @version 1.0
+ * Create Time 2025/3/26_23:18
+ */
+
+@Configuration
+public class SecurityConfig {
+
+    /**
+     * 注入密码加密器
+     * 彩虹表
+     *
+     * @return BCryptPasswordEncoder
+     */
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * 注入认证管理器
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(userDetailsService); // 通过构造注入
+    }
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private MyAuthenticationEntryPoint entryPoint;
+
+    @Autowired
+    private MyAccessDeniedHandler accessDeniedHandler;
+
+    /**
+     * Spring Security 核心配置
+     */
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                // 禁用跨站请求伪造
+                .csrf(AbstractHttpConfigurer::disable)
+                // 禁用 Session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // 放行登录接口
+                        .requestMatchers("/api/login").permitAll()
+                        // 其他接口需要认证
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                // 配置异常处理
+                .exceptionHandling(exception -> exception
+                        // 认证失败处理器（未登录）
+                        .authenticationEntryPoint(entryPoint)
+                        // 权限不足处理器（禁止访问）
+                        .accessDeniedHandler(accessDeniedHandler)
+                );
+
+        return http.build();
+    }
+}
