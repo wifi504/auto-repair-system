@@ -38,8 +38,9 @@ public class TokenCacheHolder {
      * @param ttlMillis 有效期（毫秒）
      */
     public static void put(String token, long ttlMillis) {
-        tokenMap.put(token, System.currentTimeMillis() + ttlMillis);
-
+        if (token != null) {
+            tokenMap.put(token, System.currentTimeMillis() + ttlMillis);
+        }
     }
 
     /**
@@ -49,6 +50,7 @@ public class TokenCacheHolder {
      * @return Boolean
      */
     public static boolean exists(String token) {
+        if (token == null) return false;
         Long expireAt = tokenMap.get(token);
         return expireAt != null && expireAt > System.currentTimeMillis();
     }
@@ -59,7 +61,9 @@ public class TokenCacheHolder {
      * @param token Token
      */
     public static void remove(String token) {
-        tokenMap.remove(token);
+        if (token != null) {
+            tokenMap.remove(token);
+        }
     }
 
     /**

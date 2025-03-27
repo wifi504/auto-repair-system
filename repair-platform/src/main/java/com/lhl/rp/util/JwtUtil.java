@@ -32,6 +32,10 @@ public class JwtUtil {
     }
 
     public static boolean verify(String token) {
-        return JWTUtil.verify(token, SECRET.getBytes());
+        try {
+            return JWTUtil.verify(token, SECRET.getBytes());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

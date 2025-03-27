@@ -15,6 +15,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * @author WIFI连接超时
@@ -58,6 +61,9 @@ public class SecurityConfig {
     @Autowired
     private MyAccessDeniedHandler accessDeniedHandler;
 
+    @Autowired
+    private CorsConfig corsConfigSource;
+
     /**
      * Spring Security 核心配置
      */
@@ -66,6 +72,8 @@ public class SecurityConfig {
         http
                 // 禁用跨站请求伪造
                 .csrf(AbstractHttpConfigurer::disable)
+                // 跨域请求配置
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // 禁用 Session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -84,5 +92,23 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        if (corsConfigSource.getAllowedOrigins().contains("*") && Boolean.TRUE.equals(corsConfigSource.getAllowCredentials())) {
+            throw new IllegalStateException("Cannot set allowCredentials to true when allowedOrigins contains '*'.");
+        }
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(corsConfigSource.getAllowedOrigins());
+        configuration.setAllowedMethods(corsConfigSource.getAllowedMethods());
+        configuration.setAllowedHeaders(corsConfigSource.getAllowedHeaders());
+        configuration.setAllowCredentials(corsConfigSource.getAllowCredentials());
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }

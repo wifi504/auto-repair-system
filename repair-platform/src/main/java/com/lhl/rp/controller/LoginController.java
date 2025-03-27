@@ -4,6 +4,7 @@ import com.lhl.rp.bean.LoginUser;
 import com.lhl.rp.config.TokenConfig;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
+import com.lhl.rp.util.CaptchaManagerUtil;
 import com.lhl.rp.util.JwtUtil;
 import com.lhl.rp.util.TokenCacheHolder;
 import com.lhl.rp.util.TokenUtil;
@@ -12,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -41,6 +39,13 @@ public class LoginController {
     public R<?> login(@RequestBody Map<String, String> user) {
         String username = user.get("username");
         String password = user.get("password");
+        String uuid = user.get("uuid");
+        String captcha = user.get("captcha");
+
+        // 校验验证码
+        if (!CaptchaManagerUtil.verifyCaptcha(uuid, captcha)) {
+            return R.error(ResultCode.FAIL, "验证码错误或已失效");
+        }
 
         // 执行登录认证
         UsernamePasswordAuthenticationToken token =
@@ -89,5 +94,11 @@ public class LoginController {
 
         TokenCacheHolder.remove(token);
         return R.error(ResultCode.UNAUTHORIZED, "Token 已失效或格式错误，无法注销登录态");
+    }
+
+    // 获取验证码
+    @GetMapping("/captcha")
+    public R<Map<String, String>> getCaptcha() {
+        return R.ok(CaptchaManagerUtil.generateCaptcha());
     }
 }
