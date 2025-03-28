@@ -21,6 +21,7 @@
       <el-space>
         <el-button type="primary" @click="login" :disabled="hasLogin">登录</el-button>
         <el-button type="danger" @click="logout" :disabled="!hasLogin">注销</el-button>
+        <el-button type="danger" @click="logoutAll" :disabled="!hasLogin">注销所有设备</el-button>
       </el-space>
     </el-card>
   </div>
@@ -37,7 +38,7 @@ const userDetail = ref({});
 
 onMounted(async () => {
   try {
-    const response = await request.get('/user/me');
+    const response = await request.get('user/me');
     userDetail.value = response;
     hasLogin.value = true;
   } catch (error) {
@@ -48,11 +49,15 @@ onMounted(async () => {
 
 const login = () => {
   router.push('/login');
-};
+}
 
 const logout = () => {
   router.push('/logout');
-};
+}
+
+const logoutAll = () => {
+  router.push('/logout?t=all');
+}
 </script>
 
 <style scoped>

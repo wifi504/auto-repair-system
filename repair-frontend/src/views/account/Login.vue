@@ -4,15 +4,16 @@
       <!-- Header部分，显示logo -->
       <template #header>
         <div class="header-container">
-          <img src="@/assets/image/banner-color-small.png" alt="Logo" class="logo"/>
+          <img src="../../assets/image/banner-color-small.png" alt="Logo" class="logo"/>
         </div>
       </template>
 
       <h2>欢迎登录汽车维修管理系统</h2>
-      <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-width="80px">
+      <el-form :model="loginForm" :rules="rules" ref="loginFormRef"
+               label-width="80px" @keydown.enter="onSubmit">
         <!-- 用户名 -->
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名"/>
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" ref="usernameInputRef"/>
         </el-form-item>
 
         <!-- 密码 -->
@@ -23,7 +24,7 @@
         <!-- 验证码 -->
         <el-form-item label="验证码" prop="captcha">
           <div class="captcha-container">
-            <el-input v-model="loginForm.captcha" placeholder="请输入验证码"/>
+            <el-input v-model="loginForm.captcha" placeholder="请输入验证码" ref="captchaInputRef"/>
             <el-image
                 :src="captchaSrc"
                 alt="验证码"
@@ -31,27 +32,43 @@
                 @click="refreshCaptcha"
                 fit="contain"
             >
-              <template #placeholder>
-                <div class="placeholder">加载中...</div>
+              <template #error>
+                <el-button class="error-holder" :loading="isLoading" bg text>
+                  <div v-show="!isLoading">
+                    <el-icon>
+                      <Refresh/>
+                    </el-icon>
+                    重试
+                  </div>
+                </el-button>
               </template>
             </el-image>
           </div>
         </el-form-item>
 
-        <!-- 登录按钮 -->
         <el-form-item>
-          <el-button type="primary" @click="onSubmit" :loading="isSubmitting">登录</el-button>
+          <!-- 表单按钮 -->
+          <el-button class="button" type="primary" @click="onSubmit" :loading="isSubmitting">登 录</el-button>
+          <el-button class="button" type="warning" @click="" plain>立即注册</el-button>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button @click="" link>遇到问题无法登录？</el-button>
         </el-form-item>
       </el-form>
     </el-card>
   </div>
+  <background-image image="login"/>
 </template>
 
 <script setup>
 import {reactive, ref, onMounted} from 'vue'
-import {ElMessage} from 'element-plus'
-import request from "@/utils/request";
 import {useRouter} from "vue-router";
+import {ElMessage} from 'element-plus'
+import BackgroundImage from "@/components/common/BackgroundImage.vue";
+import request from "@/utils/request.js";
+import debounce from "@/utils/debounce.js";
+import {jwtDecode} from "jwt-decode";
 
 const router = useRouter();
 
@@ -65,6 +82,10 @@ const loginForm = reactive({
 
 // 表单引用
 const loginFormRef = ref(null)
+// 用户名输入框引用
+const usernameInputRef = ref(null)
+// 验证码输入框引用
+const captchaInputRef = ref(null)
 
 // 加载状态
 const isSubmitting = ref(false)
@@ -81,11 +102,9 @@ const rules = {
 }
 
 // 加载验证码
-const refreshCaptcha = async () => {
+const loadCaptcha = async () => {
   try {
-    isLoading.value = true
-    const response = await request.get('/captcha')
-
+    const response = await request.get('captcha')
     // 判断响应成功
     if (response.code === 200) {
       captchaSrc.value = response.data.captcha
@@ -97,7 +116,19 @@ const refreshCaptcha = async () => {
     ElMessage.error('验证码加载失败，请重试')
   } finally {
     isLoading.value = false
+    if (loginForm.username !== '') {
+      loginForm.captcha = ''
+      captchaInputRef.value.focus()
+    }
   }
+}
+
+const debounceRefreshCaptcha = debounce(loadCaptcha, 250)
+
+const refreshCaptcha = () => {
+  captchaSrc.value = ''
+  isLoading.value = true
+  debounceRefreshCaptcha()
 }
 
 // 提交登录
@@ -106,12 +137,20 @@ const onSubmit = () => {
     if (valid) {
       isSubmitting.value = true
       try {
-        const response = await request.post('/login', loginForm)
-        ElMessage.success('登录成功！')
+        const response = await request.post('login', loginForm)
+        ElMessage.success('登录成功！欢迎您，'
+            + jwtDecode(response.data).nickname + '！')
         localStorage.setItem('token', response.data)
         await router.push('/')
       } catch (error) {
-        ElMessage.error(error.response?.data?.message || '登录失败，请重试')
+        ElMessage.error(error.msg || '登录失败，请重试')
+        loginForm.captcha = ''
+        if (!error.msg.includes('验证码')) {
+          loginForm.username = ''
+          loginForm.password = ''
+          loginForm.uuid = ''
+          usernameInputRef.value.focus()
+        }
         refreshCaptcha()
       } finally {
         isSubmitting.value = false
@@ -124,6 +163,7 @@ const onSubmit = () => {
 
 onMounted(() => {
   refreshCaptcha()
+  usernameInputRef.value.focus()
 })
 </script>
 
@@ -133,13 +173,13 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #f0f2f5;
 }
 
 .login-card {
-  width: 480px; /* 调整宽度 */
+  width: 480px;
   padding: 30px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
 
 .header-container {
@@ -168,17 +208,16 @@ h2 {
 
 .captcha-img {
   width: 120px;
-  height: 40px;
+  height: 32px;
   cursor: pointer;
 }
 
-.placeholder {
-  width: 120px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #e5e7eb;
-  color: #888;
+.error-holder {
+  width: 100%;
+  height: 100%;
+}
+
+.button {
+  width: calc(50% - 6px);
 }
 </style>
