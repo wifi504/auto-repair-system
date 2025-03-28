@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -50,7 +51,12 @@ public class LoginController {
         // 执行登录认证
         UsernamePasswordAuthenticationToken token =
                 new UsernamePasswordAuthenticationToken(username, password);
-        Authentication auth = authenticationManager.authenticate(token);
+        Authentication auth = null;
+        try {
+            auth = authenticationManager.authenticate(token);
+        } catch (AuthenticationException e) {
+            return R.error(ResultCode.UNAUTHORIZED, "用户名或密码错误！");
+        }
 
         // 获取用户信息
         LoginUser loginUser = (LoginUser) auth.getPrincipal();
@@ -58,8 +64,12 @@ public class LoginController {
         // 配置文件读取 Token 有效期
         long ttlMillis = tokenConfig.getTtlSecond() * 1000L;
 
+        // 获取用户昵称
+        String nickname = loginUser.getTUser().getNickname();
+        nickname = nickname == null ? loginUser.getUsername() : nickname;
+
         // 生成 JWT
-        String jwt = JwtUtil.createToken(loginUser.getUsername(), ttlMillis);
+        String jwt = JwtUtil.createToken(loginUser.getUsername(), nickname, ttlMillis);
 
         // 添加到 Token 缓存中心
         TokenCacheHolder.put(jwt, ttlMillis);
@@ -74,9 +84,9 @@ public class LoginController {
 
         if (token != null) {
             TokenCacheHolder.remove(token);
+            return R.ok(null, "已成功退出登录");
         }
-
-        return R.ok("已成功退出登录");
+        return R.error(ResultCode.UNAUTHORIZED, "无法注销登录态，令牌无效！");
     }
 
     // 用户所有 Token 注销认证
@@ -88,12 +98,12 @@ public class LoginController {
             if (JwtUtil.verify(token) && TokenCacheHolder.exists(token)) {
                 String username = JwtUtil.getUsername(token);
                 TokenCacheHolder.removeAll(username);
-                return R.ok("已成功注销用户(" + username + ")所有登录态！");
+                return R.ok(null, "用户(" + JwtUtil.getNickname(token) + ")已成功注销所有登录态！");
             }
         }
 
         TokenCacheHolder.remove(token);
-        return R.error(ResultCode.UNAUTHORIZED, "Token 已失效或格式错误，无法注销登录态");
+        return R.error(ResultCode.UNAUTHORIZED, "无法注销登录态，令牌无效！");
     }
 
     // 获取验证码

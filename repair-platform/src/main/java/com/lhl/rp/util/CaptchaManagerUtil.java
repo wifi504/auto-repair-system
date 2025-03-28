@@ -1,7 +1,6 @@
 package com.lhl.rp.util;
 
-import cn.hutool.captcha.CaptchaUtil;
-import cn.hutool.captcha.LineCaptcha;
+import cn.hutool.captcha.*;
 
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +24,13 @@ public class CaptchaManagerUtil {
      * @return 验证码图片的 Base64 和唯一标识符
      */
     public static Map<String, String> generateCaptcha() {
-        LineCaptcha captcha = CaptchaUtil.createLineCaptcha(200, 80, 4, 100);
+        AbstractCaptcha captcha = switch ((int) (Math.random() * 3) + 1) {
+            case 1 -> CaptchaUtil.createLineCaptcha(120, 40, 4, 40);
+            case 2 -> CaptchaUtil.createCircleCaptcha(120, 40, 4, 25);
+            case 3 -> CaptchaUtil.createShearCaptcha(120, 40, 4, 5);
+            default -> throw new IllegalStateException("Generate captcha unexpected value!");
+        };
+
 
         // 生成唯一标识符
         String uuid = UUID.randomUUID().toString();
