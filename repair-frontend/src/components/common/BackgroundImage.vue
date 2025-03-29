@@ -6,7 +6,7 @@
 
 <script setup>
 import loginImage from '@/assets/image/login-bg.svg'
-import {ref} from "vue";
+import {ref} from "vue"
 
 const props = defineProps(['image'])
 const image = ref()

@@ -13,18 +13,36 @@
                label-width="80px" @keydown.enter="onSubmit">
         <!-- 用户名 -->
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" ref="usernameInputRef"/>
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" ref="usernameInputRef">
+            <template #prefix>
+              <el-icon>
+                <User/>
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
 
         <!-- 密码 -->
         <el-form-item label="密码" prop="password">
-          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"/>
+          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password>
+            <template #prefix>
+              <el-icon>
+                <Key/>
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
 
         <!-- 验证码 -->
         <el-form-item label="验证码" prop="captcha">
           <div class="captcha-container">
-            <el-input v-model="loginForm.captcha" placeholder="请输入验证码" ref="captchaInputRef"/>
+            <el-input v-model="loginForm.captcha" placeholder="请输入验证码" ref="captchaInputRef">
+              <template #prefix>
+                <el-icon>
+                  <Paperclip/>
+                </el-icon>
+              </template>
+            </el-input>
             <el-image
                 :src="captchaSrc"
                 alt="验证码"
@@ -65,6 +83,7 @@
 import {reactive, ref, onMounted} from 'vue'
 import {useRouter} from "vue-router";
 import {ElMessage} from 'element-plus'
+import {Key, Paperclip, Refresh, User} from "@element-plus/icons-vue";
 import BackgroundImage from "@/components/common/BackgroundImage.vue";
 import request from "@/utils/request.js";
 import debounce from "@/utils/debounce.js";

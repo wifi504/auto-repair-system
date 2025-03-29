@@ -25,10 +25,10 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
-import {useRouter, useRoute} from "vue-router";
-import BackgroundImage from "@/components/common/BackgroundImage.vue";
-import request from "@/utils/request.js";
+import {onMounted, ref} from "vue"
+import {useRouter, useRoute} from "vue-router"
+import BackgroundImage from "@/components/common/BackgroundImage.vue"
+import request from "@/utils/request.js"
 
 const router = useRouter()
 const route = useRoute()
@@ -61,23 +61,23 @@ onMounted(async () => {
     let res
     if (route.query.t && route.query.t === 'all') {
       // 注销用户全部设备登录态
-      res = await request.post('logoutAll');
+      res = await request.post('logoutAll')
     } else {
       // 默认注销当前环境登录态
-      res = await request.post('logout');
+      res = await request.post('logout')
     }
     icon.value = 'success'
-    title.value = res.msg || '退出成功';
-    localStorage.removeItem('token');
+    title.value = res.msg || '退出成功'
+    localStorage.removeItem('token')
     hasLogout.value = 1
     startCountdown(3, '秒后前往首页', () => doRoute())
   } catch (error) {
     icon.value = 'error'
-    title.value = error.msg || '退出失败，请稍后重试';
+    title.value = error.msg || '退出失败，请稍后重试'
     hasLogout.value = 0
     startCountdown(5, '秒后返回原页面', () => doRoute())
   }
-});
+})
 </script>
 
 <style scoped>

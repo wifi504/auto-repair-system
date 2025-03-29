@@ -3,7 +3,7 @@ import axios from 'axios'
 // 封装 HTTP Request 请求
 
 // 开发模式自动控制台输出所有请求对象
-const dev = true;
+const dev = true
 
 // 创建 Axios 实例
 const instance = axios.create({
@@ -16,7 +16,7 @@ instance.interceptors.request.use(
   (config) => {
     if (dev) {
       console.log('Request ------>')
-      console.log(config);
+      console.log(config)
     }
 
     // 拦截请求携带 Token
@@ -29,7 +29,7 @@ instance.interceptors.request.use(
   (error) => {
     if (dev) {
       console.log('---x---> Request Error')
-      console.log(error);
+      console.log(error)
     }
     return Promise.reject(error)
   }
@@ -40,7 +40,7 @@ instance.interceptors.response.use(
   (response) => {
     if (dev) {
       console.log('<------ Response')
-      console.log(response);
+      console.log(response)
     }
 
     const res = response.data
@@ -55,7 +55,7 @@ instance.interceptors.response.use(
   (error) => {
     if (dev) {
       console.log('Response Error <---x---')
-      console.log(error);
+      console.log(error)
     }
 
     return Promise.reject({

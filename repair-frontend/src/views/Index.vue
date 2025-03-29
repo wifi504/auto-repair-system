@@ -28,35 +28,34 @@
 </template>
 
 <script setup>
-import request from "@/utils/request.js";
-import {onMounted, ref} from "vue";
-import {useRouter} from "vue-router";
+import request from "@/utils/request.js"
+import {onMounted, ref} from "vue"
+import {useRouter} from "vue-router"
 
-const router = useRouter();
-const hasLogin = ref(false);
-const userDetail = ref({});
+const router = useRouter()
+const hasLogin = ref(false)
+const userDetail = ref({})
 
 onMounted(async () => {
   try {
-    const response = await request.get('user/me');
-    userDetail.value = response;
-    hasLogin.value = true;
+    userDetail.value = await request.get('user/me')
+    hasLogin.value = true
   } catch (error) {
-    console.error('获取用户信息失败:', error);
-    hasLogin.value = false;
+    console.error('获取用户信息失败:', error)
+    hasLogin.value = false
   }
-});
+})
 
 const login = () => {
-  router.push('/login');
+  router.push('/login')
 }
 
 const logout = () => {
-  router.push('/logout');
+  router.push('/logout')
 }
 
 const logoutAll = () => {
-  router.push('/logout?t=all');
+  router.push('/logout?t=all')
 }
 </script>
 
