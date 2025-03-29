@@ -160,8 +160,10 @@ const onSubmit = () => {
         ElMessage.success('登录成功！欢迎您，'
             + jwtDecode(response.data).nickname + '！')
         localStorage.setItem('token', response.data)
-        await router.push('/')
+        let back = router.options.history.state.back
+        await router.push(back || '/platform')
       } catch (error) {
+        console.log(error)
         ElMessage.error(error.msg || '登录失败，请重试')
         loginForm.captcha = ''
         if (!error.msg.includes('验证码')) {

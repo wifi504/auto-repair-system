@@ -5,10 +5,13 @@ const Index = () => import('@/views/Index.vue')
 const Login = () => import('@/views/account/Login.vue')
 const Logout = () => import('@/views/account/Logout.vue')
 
+const Platform = () => import('@/views/Platform.vue')
+
 const routes = [
   {path: '/', component: Index},
   {path: '/login', component: Login},
   {path: '/logout', component: Logout},
+  {path: '/platform', component: Platform},
 ]
 
 const router = createRouter({
