@@ -7,6 +7,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Objects;
 
@@ -17,12 +19,19 @@ import java.util.Objects;
  * @version 1.0
  * Create Time 2025/3/27_0:26
  */
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // 未登录 Token 无效
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public R<?> handleAuthError(AuthenticationCredentialsNotFoundException e) {
         return R.error(ResultCode.UNAUTHORIZED);
+    }
+
+    // 处理404异常
+    @ExceptionHandler(NoResourceFoundException.class)
+    public R<?> handleNotFound(HttpServletRequest request){
+        return R.error(ResultCode.NOT_FOUND);
     }
 
     // 无权限访问
