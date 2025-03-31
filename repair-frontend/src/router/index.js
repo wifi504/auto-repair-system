@@ -1,17 +1,52 @@
 import {createRouter, createWebHistory} from 'vue-router'
 
-const Index = () => import('@/views/Index.vue')
-
-const Login = () => import('@/views/account/Login.vue')
-const Logout = () => import('@/views/account/Logout.vue')
-
-const Platform = () => import('@/views/Platform.vue')
-
 const routes = [
-  {path: '/', component: Index},
-  {path: '/login', component: Login},
-  {path: '/logout', component: Logout},
-  {path: '/platform', component: Platform},
+  {
+    path: '/',
+    component: () => import('@/views/Index.vue'),
+    meta: {
+      title: '首页'
+    }
+  },
+  {
+    path: '/login',
+    component: () => import('@/views/account/Login.vue'),
+    meta: {
+      title: '用户登录'
+    }
+  },
+  {
+    path: '/logout',
+    component: () => import('@/views/account/Logout.vue'),
+    meta: {
+      title: '退出登录'
+    }
+  },
+  {
+    path: '/platform',
+    component: () => import('@/views/platform/Platform.vue'),
+    redirect: '/platform/home',
+    children: [
+      {
+        path: 'home',
+        component: () => import('@/views/platform/NotFound.vue'),
+        meta: {
+          title: '概览'
+        }
+      },
+      {
+        path: 'manager/role',
+        component: () => import('@/views/platform/RoleManager.vue'),
+        meta: {
+          title: '角色管理'
+        }
+      },
+      {
+        path: ':pathMatch(.*)*',
+        component: () => import('@/views/platform/NotFound.vue')
+      }
+    ]
+  },
 ]
 
 const router = createRouter({
@@ -20,15 +55,20 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-
-  // 如果已登录且访问的是登录页面，重定向到首页
-  // TODO 要记得修复多设备同时登录，因为本地没有清除token导致进不去登录页bug
-  if (token && to.path === '/login') {
-    next('/')
+  // 跳转页面自动改页面标题
+  const title = to.meta.title
+  if (title) {
+    document.title = `${title} | 云修工坊`
   } else {
-    next()
+    document.title = '云修工坊'
   }
+
+  // 如果已登录且访问的是登录页面，清除本地token
+  const token = localStorage.getItem('token')
+  if (token && to.path === '/login') {
+    localStorage.removeItem('token')
+  }
+  next()
 })
 
 export default router

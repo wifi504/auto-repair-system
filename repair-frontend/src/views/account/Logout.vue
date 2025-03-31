@@ -36,9 +36,10 @@ const title = ref('正在请求服务器...')
 const icon = ref('info')
 const hasLogout = ref(-1)
 const subTitle = ref('')
+let timer; // 跳转定时器
 
 const startCountdown = (count, msg, next) => {
-  const timer = setInterval(() => {
+  timer = setInterval(() => {
     subTitle.value = `${count} ${msg}`
     count--
     if (count < 0) {
@@ -49,6 +50,9 @@ const startCountdown = (count, msg, next) => {
 }
 
 const doRoute = () => {
+  if (timer) {
+    clearInterval(timer)
+  }
   if (hasLogout.value === 1) {
     router.push('/')
   } else if (hasLogout.value === 0) {

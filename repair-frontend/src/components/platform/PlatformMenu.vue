@@ -3,9 +3,10 @@
     <el-menu
         class="left-main-menu"
         :background-color="'#06304d'"
-        default-active="1"
+        :default-active="route.path.split('/').slice(2).join('/')"
         :text-color="'#fff'"
         :active-text-color="'#54f9ff'"
+        router
     >
       <!-- 首页logo -->
       <el-menu-item index="banner" class="banner" @click="router.push('/')">
@@ -29,18 +30,19 @@
                   v-for="subChild in child.children"
                   :key="subChild.index"
                   :index="subChild.index"
+                  :route="`/platform/${subChild.index}`"
                   :disabled="subChild.disabled"
               >
                 {{ subChild.title }}
               </el-menu-item>
             </el-sub-menu>
-            <el-menu-item v-else :index="child.index" :disabled="child.disabled">
+            <el-menu-item v-else :index="child.index" :route="`/platform/${child.index}`" :disabled="child.disabled">
               {{ child.title }}
             </el-menu-item>
           </template>
         </el-sub-menu>
         <!-- 无子菜单时 -->
-        <el-menu-item v-else :index="item.index" :disabled="item.disabled">
+        <el-menu-item v-else :index="item.index" :route="`/platform/${item.index}`" :disabled="item.disabled">
           <el-icon>
             <component :is="getIconComponent(item.icon)"/>
           </el-icon>
@@ -53,13 +55,14 @@
 
 <script setup>
 import {reactive} from "vue"
-import {useRouter} from "vue-router"
+import {useRouter, useRoute} from "vue-router"
 import {
   Menu, Monitor, User, OfficeBuilding,
-  Avatar, Document, Ticket
+  Avatar, Document, Ticket, Tools
 } from "@element-plus/icons-vue"
 
 const router = useRouter()
+const route = useRoute()
 
 // 图标映射表
 const iconMap = {
@@ -69,7 +72,8 @@ const iconMap = {
   OfficeBuilding,
   Avatar,
   Document,
-  Ticket
+  Ticket,
+  Tools
 }
 
 // 从映射表获取图标组件
@@ -81,22 +85,28 @@ const getIconComponent = (iconName) => {
 // {index, title, icon, children, disabled}
 const menuData = reactive([
   {
-    index: '1',
+    index: 'home',
     title: '概览',
     icon: 'Monitor'
   },
   {
-    index: '2',
-    title: '平台用户管理',
-    icon: 'User',
+    index: 'manager',
+    title: '系统管理',
+    icon: 'Tools',
     children: [
       {
-        index: '2-1',
-        title: '用户列表查询'
+        index: 'manager/role',
+        title: '角色管理',
       },
       {
-        index: '2-2',
-        title: '账号申诉列表'
+        index: 'manager/test',
+        title: 'test',
+        children: [
+          {
+            index: 'manager/test/test1',
+            title: 'test1'
+          }
+        ]
       }
     ]
   },
