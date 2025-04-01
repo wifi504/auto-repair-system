@@ -3,6 +3,7 @@ package com.lhl.rp.handler;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -30,7 +31,7 @@ public class GlobalExceptionHandler {
 
     // 处理404异常
     @ExceptionHandler(NoResourceFoundException.class)
-    public R<?> handleNotFound(HttpServletRequest request){
+    public R<?> handleNotFound(HttpServletRequest request) {
         return R.error(ResultCode.NOT_FOUND);
     }
 
@@ -47,10 +48,16 @@ public class GlobalExceptionHandler {
         return R.error(ResultCode.FAIL, msg);
     }
 
+    // JSON 转换 Dto 错误（JSON数据不合法）
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public R<?> handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+        return R.error(ResultCode.FAIL, "请求数据不合法：" + e.getMessage().split(":")[0]);
+    }
+
     // 通用异常（兜底）
     @ExceptionHandler(Exception.class)
     public R<?> handleOtherErrors(Exception e, HttpServletRequest request) {
         e.printStackTrace(); // 日志可选保留
-        return R.error(ResultCode.SERVER_ERROR, "系统异常：" + e.getMessage());
+        return R.error(ResultCode.SERVER_ERROR, "系统异常：" + e.getMessage().split(":")[0]);
     }
 }
