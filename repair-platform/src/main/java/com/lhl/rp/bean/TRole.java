@@ -3,12 +3,14 @@ package com.lhl.rp.bean;
 import java.io.Serial;
 import java.io.Serializable;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
  * 角色表
  * t_role
  */
+@Builder
 @Data
 public class TRole implements Serializable {
     @Serial

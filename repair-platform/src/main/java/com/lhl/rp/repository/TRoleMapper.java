@@ -18,4 +18,6 @@ public interface TRoleMapper {
     int updateByPrimaryKey(TRole record);
 
     List<TRole> selectAll();
+
+    int deleteByPrimaryKeys(List<Long> ids);
 }
