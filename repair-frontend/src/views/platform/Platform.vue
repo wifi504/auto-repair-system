@@ -13,9 +13,11 @@
       <!-- 面板内容 -->
       <el-main>
         <router-view v-slot="{ Component }">
-          <keep-alive>
-            <component :is="Component"/>
-          </keep-alive>
+          <transition mode="out-in" name="slide-fade" >
+            <keep-alive>
+              <component :is="Component"/>
+            </keep-alive>
+          </transition>
         </router-view>
       </el-main>
       <!-- 脚注 -->
@@ -67,5 +69,20 @@ import ContainerHeader from "@/components/platform/ContainerHeader.vue";
 .footer p {
   display: block;
   color: #7e7e7e;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(50px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50px);
 }
 </style>

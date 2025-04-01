@@ -1,75 +1,77 @@
 <template>
-  <page-title>
-    角色管理
-  </page-title>
   <div>
-    <el-button icon="Refresh" @click="refreshTableData"/>
-    <el-button type="primary" @click="newRole">新增</el-button>
-    <el-button type="danger" @click="deleteByList" :disabled="!selectedData.length">批量删除</el-button>
+    <page-title>
+      角色管理
+    </page-title>
+    <div>
+      <el-button icon="Refresh" @click="refreshTableData"/>
+      <el-button type="primary" @click="newRole">新增</el-button>
+      <el-button type="danger" @click="deleteByList" :disabled="!selectedData.length">批量删除</el-button>
+    </div>
+    <base-table
+        :data="tableData"
+        :columns="columns"
+        :loading="loading"
+        :actions="actions"
+        :pagination="pagination"
+        selectable
+        @pageChange="handlePageChange"
+        @pageSizeChange="handlePageSizeChange"
+        @selectionChange="handleSelectionChange"
+    />
+    <base-dialog-data v-model="showDialog">
+      <template #title>
+        <el-icon style="margin-top: 2px">
+          <UserFilled/>
+        </el-icon>
+        {{ dialogTitle }}
+      </template>
+      <template #context>
+        <div v-if="dialogTitle === '确认批量删除'">
+          您将要删除{{ selectedData.length }}个角色，此操作不可撤销！
+        </div>
+        <el-form
+            :model="dialogEditData"
+            ref="dialogFormRef"
+            :rules="rules"
+            :disabled="dialogTitle === '删除角色'"
+            label-width="130px"
+            v-else
+        >
+          <el-form-item label="角色名称" prop="name">
+            <el-input v-model="dialogEditData.name"></el-input>
+          </el-form-item>
+          <el-form-item label="角色标识符" prop="code">
+            <el-input v-model="dialogEditData.code"></el-input>
+          </el-form-item>
+          <el-form-item label="角色描述" prop="remark">
+            <el-input
+                :rows="3"
+                type="textarea"
+                v-model="dialogEditData.remark"></el-input>
+          </el-form-item>
+          <el-form-item label="角色排序索引" prop="orderNum">
+            <el-input v-model="dialogEditData.orderNum"></el-input>
+          </el-form-item>
+          <el-divider/>
+          <el-form-item label="角色权限">
+            <el-tree-select
+                multiple
+                :render-after-expand="false"
+                show-checkbox
+            />
+          </el-form-item>
+        </el-form>
+      </template>
+      <template #footer>
+        <el-button @click="cancel" type="primary" plain>取消</el-button>
+        <el-button v-if="dialogTitle === '编辑角色'" @click="submit" type="primary">提交更改</el-button>
+        <el-button v-if="dialogTitle === '删除角色'" @click="delOnce" type="danger">确认删除</el-button>
+        <el-button v-if="dialogTitle === '确认批量删除'" @click="doDelList" type="danger">确认全部删除</el-button>
+        <el-button v-if="dialogTitle === '创建角色'" @click="createOnce" type="primary">立即创建</el-button>
+      </template>
+    </base-dialog-data>
   </div>
-  <base-table
-      :data="tableData"
-      :columns="columns"
-      :loading="loading"
-      :actions="actions"
-      :pagination="pagination"
-      selectable
-      @pageChange="handlePageChange"
-      @pageSizeChange="handlePageSizeChange"
-      @selectionChange="handleSelectionChange"
-  />
-  <base-dialog-data v-model="showDialog">
-    <template #title>
-      <el-icon style="margin-top: 2px">
-        <UserFilled/>
-      </el-icon>
-      {{ dialogTitle }}
-    </template>
-    <template #context>
-      <div v-if="dialogTitle === '确认批量删除'">
-        您将要删除{{ selectedData.length }}个角色，此操作不可撤销！
-      </div>
-      <el-form
-          :model="dialogEditData"
-          ref="dialogFormRef"
-          :rules="rules"
-          :disabled="dialogTitle === '删除角色'"
-          label-width="130px"
-          v-else
-      >
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="dialogEditData.name"></el-input>
-        </el-form-item>
-        <el-form-item label="角色标识符" prop="code">
-          <el-input v-model="dialogEditData.code"></el-input>
-        </el-form-item>
-        <el-form-item label="角色描述" prop="remark">
-          <el-input
-              :rows="3"
-              type="textarea"
-              v-model="dialogEditData.remark"></el-input>
-        </el-form-item>
-        <el-form-item label="角色排序索引" prop="orderNum">
-          <el-input v-model="dialogEditData.orderNum"></el-input>
-        </el-form-item>
-        <el-divider/>
-        <el-form-item label="角色权限">
-          <el-tree-select
-              multiple
-              :render-after-expand="false"
-              show-checkbox
-          />
-        </el-form-item>
-      </el-form>
-    </template>
-    <template #footer>
-      <el-button @click="cancel" type="primary" plain>取消</el-button>
-      <el-button v-if="dialogTitle === '编辑角色'" @click="submit" type="primary">提交更改</el-button>
-      <el-button v-if="dialogTitle === '删除角色'" @click="delOnce" type="danger">确认删除</el-button>
-      <el-button v-if="dialogTitle === '确认批量删除'" @click="doDelList" type="danger">确认全部删除</el-button>
-      <el-button v-if="dialogTitle === '创建角色'" @click="createOnce" type="primary">立即创建</el-button>
-    </template>
-  </base-dialog-data>
 </template>
 
 <script setup>
@@ -145,14 +147,20 @@ const doDelList = async () => {
 }
 // 插入一条数据
 const createOnce = async () => {
-  try {
-    const response = await request.post('role/create', dialogEditData.value)
-    ElMessage.success(`创建成功：${response.msg || 'success'}`)
-    refreshTableData()
-  } catch (e) {
-    ElMessage.error(`创建失败：${e.msg || e.message || 'error'}`)
-  } finally {
-    showDialog.value = false
+  if (dialogFormRef.value) {
+    await dialogFormRef.value.validate(async (valid) => {
+      if (valid) {
+        try {
+          const response = await request.post('role/create', dialogEditData.value)
+          ElMessage.success(`创建成功：${response.msg || 'success'}`)
+          refreshTableData()
+        } catch (e) {
+          ElMessage.error(`创建失败：${e.msg || e.message || 'error'}`)
+        } finally {
+          showDialog.value = false
+        }
+      }
+    })
   }
 }
 // 创建角色
@@ -200,13 +208,20 @@ const actions = [
       dialogTitle.value = '删除角色'
       showDialog.value = true
     }
+  },
+  {
+    label: '测试字数六个',
+    type: 'success',
+    handler: (row) => {
+      console.log(`测试：${row}`)
+    }
   }
 ]
 // 分页
 const pagination = ref({
   currentPage: 1,
   pageSize: 10,
-  total: 100
+  total: 0
 })
 
 // 事件处理
