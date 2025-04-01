@@ -36,6 +36,11 @@ import ContainerHeader from "@/components/platform/ContainerHeader.vue";
 </script>
 
 <style scoped>
+.el-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .el-header {
   box-shadow: 0 0 3px 3px rgba(0, 0, 0, .1);
   z-index: 999;
@@ -43,6 +48,7 @@ import ContainerHeader from "@/components/platform/ContainerHeader.vue";
 
 .el-main {
   background-color: #fafafa;
+  height: 100%;
   overflow: hidden;
 }
 

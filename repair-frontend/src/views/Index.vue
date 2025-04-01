@@ -19,6 +19,7 @@
 
       <!-- 操作按钮 -->
       <el-space>
+        <el-button type="primary" plain @click="goPlatform">管理面板</el-button>
         <el-button type="primary" @click="login" :disabled="hasLogin">登录</el-button>
         <el-button type="danger" @click="logout" :disabled="!hasLogin">注销</el-button>
         <el-button type="danger" @click="logoutAll" :disabled="!hasLogin">注销所有设备</el-button>
@@ -45,6 +46,10 @@ onMounted(async () => {
     hasLogin.value = false
   }
 })
+
+const goPlatform = () => {
+  router.push('/platform')
+}
 
 const login = () => {
   router.push('/login')
