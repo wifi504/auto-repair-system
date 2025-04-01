@@ -77,7 +77,11 @@ export default {
   put(url, data) {
     return instance.put(url, data)
   },
-  delete(url, params) {
-    return instance.delete(url, {params})
+  delete(url, data) {
+    return instance.request({
+      url,
+      method: 'delete',
+      data // 以请求体形式发送
+    })
   }
 }

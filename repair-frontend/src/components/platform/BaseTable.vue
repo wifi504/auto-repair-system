@@ -163,6 +163,10 @@ onBeforeUnmount(() => {
   margin: 10px 0;
 }
 
+.el-table * {
+  user-select: text;
+}
+
 .pagination {
   margin-top: 10px;
   display: flex;
