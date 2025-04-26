@@ -73,10 +73,11 @@ public class TRoleServiceImpl implements TRoleService {
      * @param ids 主键ID List集合
      * @return 成功记录条数
      */
+    @Transactional
     @Override
     public int deleteByIds(List<Long> ids) {
         int count = tRoleMapper.deleteByPrimaryKeys(ids);
-        if (count != ids.size()) throw new RuntimeException("部分条目删除失败");
+        if (count != ids.size()) throw new RuntimeException("部分条目删除失败，已回滚");
         return count;
     }
 

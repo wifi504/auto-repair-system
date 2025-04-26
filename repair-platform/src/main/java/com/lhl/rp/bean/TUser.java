@@ -4,10 +4,8 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 /**
  * 用户表
@@ -17,6 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class TUser implements Serializable {
 
     @Serial
@@ -35,6 +34,7 @@ public class TUser implements Serializable {
     /**
      * 登录密码
      */
+    @JsonIgnore
     private String loginPwd;
 
     /**

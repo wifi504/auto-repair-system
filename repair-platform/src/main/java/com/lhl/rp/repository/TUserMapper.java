@@ -2,6 +2,8 @@ package com.lhl.rp.repository;
 
 import com.lhl.rp.bean.TUser;
 
+import java.util.List;
+
 public interface TUserMapper {
     int deleteByPrimaryKey(Long id);
 
@@ -16,4 +18,10 @@ public interface TUserMapper {
     int updateByPrimaryKey(TUser record);
 
     TUser selectByLoginAct(String username);
+
+    List<TUser> selectAll();
+
+    List<TUser> selectAllExist();
+
+    int deleteByPrimaryKeys(List<Long> keys);
 }

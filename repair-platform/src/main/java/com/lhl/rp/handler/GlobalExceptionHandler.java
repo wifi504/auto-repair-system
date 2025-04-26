@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,6 +28,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public R<?> handleAuthError(AuthenticationCredentialsNotFoundException e) {
         return R.error(ResultCode.UNAUTHORIZED);
+    }
+
+    // 处理请求方法异常
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public R<?> handleMethodNotSupported() {
+        return R.error(ResultCode.METHOD_NOT_ALLOWED);
     }
 
     // 处理404异常
