@@ -13,7 +13,7 @@
       <!-- 面板内容 -->
       <el-main>
         <router-view v-slot="{ Component }">
-          <transition mode="out-in" name="slide-fade" >
+          <transition mode="out-in" name="slide-fade" appear>
             <keep-alive>
               <component :is="Component"/>
             </keep-alive>
@@ -71,18 +71,21 @@ import ContainerHeader from "@/components/platform/ContainerHeader.vue";
   color: #7e7e7e;
 }
 
-.slide-fade-enter-active,
+.slide-fade-enter-active {
+  transition: all 0.3s cubic-bezier(0, 0.5, 0.5, 1);
+}
+
 .slide-fade-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.5, 0, 1, 0.5);
 }
 
 .slide-fade-enter-from {
   opacity: 0;
-  transform: translateX(50px);
+  transform: translateX(-150px) scale(0.9);
 }
 
 .slide-fade-leave-to {
   opacity: 0;
-  transform: translateX(-50px);
+  transform: translateX(150px) scale(0.9);
 }
 </style>

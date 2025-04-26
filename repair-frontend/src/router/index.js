@@ -42,6 +42,13 @@ const routes = [
         }
       },
       {
+        path: 'manager/user',
+        component: () => import('@/views/platform/UserManager.vue'),
+        meta: {
+          title: '用户管理'
+        }
+      },
+      {
         path: ':pathMatch(.*)*',
         component: () => import('@/views/platform/NotFound.vue')
       }

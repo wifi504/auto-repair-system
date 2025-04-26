@@ -99,14 +99,8 @@ const menuData = reactive([
         title: '角色管理',
       },
       {
-        index: 'manager/test',
-        title: 'test',
-        children: [
-          {
-            index: 'manager/test/test1',
-            title: 'test1'
-          }
-        ]
+        index: 'manager/user',
+        title: '用户管理',
       }
     ]
   },

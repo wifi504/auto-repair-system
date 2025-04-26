@@ -39,7 +39,7 @@ const userDetail = ref({})
 
 onMounted(async () => {
   try {
-    userDetail.value = await request.get('user/me')
+    userDetail.value = await request.get('user/current')
     hasLogin.value = true
   } catch (error) {
     console.error('获取用户信息失败:', error)

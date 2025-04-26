@@ -209,13 +209,6 @@ const actions = [
       showDialog.value = true
     }
   },
-  {
-    label: '测试字数六个',
-    type: 'success',
-    handler: (row) => {
-      console.log(`测试：${row}`)
-    }
-  }
 ]
 // 分页
 const pagination = ref({
