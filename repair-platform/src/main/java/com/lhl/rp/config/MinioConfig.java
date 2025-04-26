@@ -1,0 +1,41 @@
+package com.lhl.rp.config;
+
+import io.minio.MinioClient;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * MinIO 配置类
+ *
+ * @author WIFI连接超时
+ * @version 1.0
+ * Create Time 2025/4/26_18:34
+ */
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "minio")
+public class MinioConfig {
+    // MinIO 服务地址
+    private String endpoint;
+    // 访问密钥
+    private String accessKey;
+    private String secretKey;
+    // 桶
+    private Bucket bucket = new Bucket();
+
+    @Data
+    public static class Bucket {
+        // 头像存储桶
+        private String avatar;
+    }
+
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(this.getEndpoint())
+                .credentials(this.getAccessKey(), this.getSecretKey())
+                .build();
+    }
+}

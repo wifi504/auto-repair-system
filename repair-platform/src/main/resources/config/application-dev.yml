@@ -18,3 +18,13 @@ cors:
   allowed-headers: Authorization, Content-Type, X-Requested-With
   # 允许携带凭证
   allow-credentials: true
+
+minio:
+  # MinIO 服务地址
+  endpoint: http://localhost:9000/
+  # 访问密钥
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket:
+    # 头像存储桶
+    avatar: repair-sys-user-avatars
