@@ -163,7 +163,6 @@ const onSubmit = () => {
         let back = router.options.history.state.back
         await router.push(back || '/platform')
       } catch (error) {
-        console.log(error)
         ElMessage.error(error.msg || '登录失败，请重试')
         loginForm.captcha = ''
         if (!error.msg.includes('验证码')) {

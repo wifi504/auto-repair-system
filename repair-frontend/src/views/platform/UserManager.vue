@@ -74,6 +74,7 @@
                 placement="right"
                 content="点击上传新头像"
                 effect="customized"
+                :disabled="dialogTitle === '删除用户'"
             >
               <el-upload
                   class="avatar-uploader"
