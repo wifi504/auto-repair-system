@@ -1,5 +1,6 @@
 package com.lhl.rp.config;
 
+import com.lhl.rp.util.FileUtil;
 import io.minio.MinioClient;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,6 +25,8 @@ public class MinioConfig {
     private String secretKey;
     // 桶
     private Bucket bucket = new Bucket();
+    // 预签名URL有效期
+    private int preSignedObjectUrlExpiry;
 
     @Data
     public static class Bucket {
@@ -33,9 +36,11 @@ public class MinioConfig {
 
     @Bean
     public MinioClient minioClient() {
-        return MinioClient.builder()
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(this.getEndpoint())
                 .credentials(this.getAccessKey(), this.getSecretKey())
                 .build();
+        FileUtil.init(minioClient, this);
+        return minioClient;
     }
 }

@@ -36,8 +36,9 @@ public class R<T> {
     /**
      * 成功响应（带数据和消息）
      *
-     * @param data 数据
-     * @param <T>  bean 类型
+     * @param data      数据
+     * @param <T>       bean 类型
+     * @param customMsg 自定义消息
      * @return 响应体
      */
     public static <T> R<T> ok(T data, String customMsg) {
@@ -49,7 +50,7 @@ public class R<T> {
     }
 
     /**
-     * 错误响应（自定义消息）
+     * 错误响应
      *
      * @param codeEnum 状态码
      * @return 响应体
@@ -71,7 +72,7 @@ public class R<T> {
     public static R<?> error(ResultCode codeEnum, String customMsg) {
         return R.builder()
                 .code(codeEnum.getCode())
-                .msg(customMsg)
+                .msg("【" + codeEnum.getMsg() + "】" + customMsg)
                 .build();
     }
 }

@@ -7,6 +7,18 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+cors:
+  # 允许哪些方法
+  allowed-methods: GET, POST, PUT, DELETE
+  # 允许携带哪些头部信息
+  allowed-headers: Authorization, Content-Type, X-Requested-With
+  # 允许携带凭证
+  allow-credentials: true
 
 mybatis:
   configuration:
@@ -20,3 +32,10 @@ token:
   cleanup-interval-second: 60
   # Token 有效期（秒）
   ttl-second: 7200
+
+minio:
+  bucket:
+    # 头像存储桶
+    avatar: user-avatars
+  # 预签名链接过期时间（秒）
+  pre-signed-object-url-expiry: 60
