@@ -23,6 +23,9 @@
         @selectionChange="handleSelectionChange"
     >
       <!-- 使用插槽自定义列 -->
+      <template #avatarUrl="{ row }">
+        <async-avatar :avatar-name="row.avatarUrl"/>
+      </template>
       <template #status="{ row }">
         <el-tag :type="row.status === 1 ? 'success' : 'danger'">
           {{ row.status === 1 ? '正常' : '已封禁' }}
@@ -67,7 +70,24 @@
             <div>{{ dialogEditData.createTime }}</div>
           </el-form-item>
           <el-form-item label="头像" prop="avatarUrl">
-            <el-input v-model="dialogEditData.avatarUrl"></el-input>
+            <el-tooltip
+                placement="right"
+                content="点击上传新头像"
+                effect="customized"
+            >
+              <el-upload
+                  class="avatar-uploader"
+                  :show-file-list="false"
+                  :before-upload="beforeAvatarUpload"
+                  :http-request="uploadUserAvatar"
+              >
+                <img v-if="dialogEditData.avatarUrl" :src="currentAvatarUrl" class="avatar"
+                     alt="头像"/>
+                <el-icon v-else class="avatar-uploader-icon">
+                  <Plus/>
+                </el-icon>
+              </el-upload>
+            </el-tooltip>
           </el-form-item>
           <el-form-item v-if="dialogTitle === '创建用户'" label="登录名" prop="loginAct">
             <el-input v-model="dialogEditData.loginAct"></el-input>
@@ -121,14 +141,15 @@
 </template>
 
 <script setup>
-import {ref, onActivated} from 'vue'
+import {onActivated, ref, watch} from 'vue'
 import {ElMessage} from "element-plus";
-import {UserFilled} from "@element-plus/icons-vue";
+import {Plus, UserFilled} from "@element-plus/icons-vue";
 import request from "@/utils/request.js";
 import debounce from "@/utils/debounce.js";
 import PageTitle from "@/components/platform/PageTitle.vue";
 import BaseTable from "@/components/platform/BaseTable.vue";
 import BaseDialogData from "@/components/platform/BaseDialogData.vue";
+import AsyncAvatar from "@/components/common/AsyncAvatar.vue";
 
 // 显示对话框编辑
 const showDialog = ref(false)
@@ -305,6 +326,53 @@ const resetPwd = () => {
   dialogTitle.value = '确认重设密码'
   showDialog.value = true
 }
+// 上传头像文件
+const uploadUserAvatar = async (options) => {
+  const {file} = options
+  const formData = new FormData()
+  formData.append('file', file)
+  try {
+    const res = await request.post('/file/upload-avatars', formData)
+    currentAvatarUrl.value = res.data
+    const url = new URL(res.data).pathname.split('/')
+    dialogEditData.value.avatarUrl = url[url.length - 1]
+  } catch (err) {
+    ElMessage.error(err.msg || '上传头像请求失败')
+  }
+}
+// 每当对话框打开，获取头像预签名链接
+const currentAvatarUrl = ref('')
+const loadCurrentAvatarUrl = async (fileName) => {
+  try {
+    const res = await request.get(`/file/get-avatars-url/${fileName}`)
+    currentAvatarUrl.value = res.data
+  } catch (err) {
+    dialogEditData.value.avatarUrl = ''
+    ElMessage.error(err.msg || '头像请求失败')
+  }
+}
+watch(showDialog, newValue => {
+  if (newValue && dialogEditData.value.avatarUrl) {
+    loadCurrentAvatarUrl(dialogEditData.value.avatarUrl)
+  } else {
+    currentAvatarUrl.value = ''
+  }
+})
+// 校验头像
+const beforeAvatarUpload = (rawFile) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg']
+  const isImage = allowedTypes.includes(rawFile.type)
+  const isLt2M = rawFile.size < 2 * 1024 * 1024
+  if (!isImage) {
+    ElMessage.error('头像格式必须是JPG/JPEG/PNG/GIF!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('头像大小不能超过2MB!')
+    return false
+  }
+  return true
+}
 
 const loading = ref(false)
 // 表格数据
@@ -314,7 +382,7 @@ const selectedData = ref([])
 // 表头配置
 const columns = [
   {prop: 'id', label: 'ID', width: '50px'},
-  {prop: 'avatarUrl', label: '头像', width: '80px'},
+  {prop: 'avatarUrl', label: '头像', width: '85px'},
   {prop: 'nickname', label: '用户昵称'},
   {prop: 'loginAct', label: '登录名'},
   {prop: 'phone', label: '手机号码'},
@@ -395,5 +463,42 @@ onActivated(() => refreshTableData())
 </script>
 
 <style scoped>
+.avatar-uploader .avatar {
+  width: 64px;
+  height: 64px;
+  display: block;
+}
 
+.avatar-uploader-icon {
+  font-size: 24px;
+  color: #8c939d;
+  width: 64px;
+  height: 64px;
+  text-align: center;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-popper.is-customized {
+  padding: 6px 12px;
+  background: #efefef;
+}
+
+.el-popper.is-customized .el-popper__arrow::before {
+  background: #efefef;
+  right: 0;
+}
 </style>

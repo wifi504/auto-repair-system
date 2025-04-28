@@ -24,8 +24,8 @@
       <el-footer height="45px">
         <div class="footer">
           <p>Copyright © 2025 云修工坊汽车维修管理系统</p>
-          <p>作者：刘昊林</p>
-          <p>蜀ICP备2022004197号</p>
+          <p>作者：</p>
+          <p>蜀ICP备</p>
         </div>
       </el-footer>
     </el-container>

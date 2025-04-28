@@ -1,7 +1,7 @@
 @import "./normalize.css";
 
 :root {
-
+  font-family: var(--el-font-family), serif;
 }
 
 *,
