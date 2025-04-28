@@ -103,11 +103,18 @@
           </el-form-item>
           <el-divider/>
           <el-form-item label="用户角色">
-            <el-tree-select
+            <el-select
+                v-model="rolesSelectedData"
                 multiple
-                :render-after-expand="false"
-                show-checkbox
-            />
+                placeholder="角色为空，请选择"
+            >
+              <el-option
+                  v-for="role in rolesList"
+                  :key="role.id"
+                  :label="role.name"
+                  :value="role.id"
+              />
+            </el-select>
           </el-form-item>
         </el-form>
       </template>
@@ -173,8 +180,13 @@ const submit = async () => {
       if (valid) {
         try {
           isDialogLoading.value = true
-          const response = await request.put('user/edit', dialogEditData.value)
-          ElMessage.success(`提交成功：${response.msg || 'success'}`)
+          const res1 = await request.put('user/edit', dialogEditData.value)
+          const res2 = await request.put('/user/edit-roles', {
+            userId: dialogEditData.value.id,
+            idList: rolesSelectedData.value
+          })
+          const msg = res1.msg + "；" + res2.msg
+          ElMessage.success(`提交成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
           ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
@@ -226,8 +238,13 @@ const createOnce = async () => {
       if (valid) {
         try {
           isDialogLoading.value = true
-          const response = await request.post('user/create', dialogEditData.value)
-          ElMessage.success(`创建成功：${response.msg || 'success'}`)
+          const res1 = await request.post('user/create', dialogEditData.value)
+          const res2 = await request.put('/user/edit-roles', {
+            userId: dialogEditData.value.id,
+            idList: rolesSelectedData.value
+          })
+          const msg = res1.msg + "；" + res2.msg
+          ElMessage.success(`创建成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
           ElMessage.error(`创建失败：${e.msg || e.message || 'error'}`)
@@ -299,6 +316,7 @@ const doUnbanList = async () => {
 // 创建用户
 const newUser = () => {
   dialogEditData.value = {}
+  rolesSelectedData.value = []
   dialogTitle.value = '创建用户'
   showDialog.value = true
 }
@@ -340,7 +358,7 @@ const uploadUserAvatar = async (options) => {
     ElMessage.error(err.msg || '上传头像请求失败')
   }
 }
-// 每当对话框打开，获取头像预签名链接
+// 获取头像预签名链接
 const currentAvatarUrl = ref('')
 const loadCurrentAvatarUrl = async (fileName) => {
   try {
@@ -348,16 +366,8 @@ const loadCurrentAvatarUrl = async (fileName) => {
     currentAvatarUrl.value = res.data
   } catch (err) {
     dialogEditData.value.avatarUrl = ''
-    ElMessage.error(err.msg || '头像请求失败')
   }
 }
-watch(showDialog, newValue => {
-  if (newValue && dialogEditData.value.avatarUrl) {
-    loadCurrentAvatarUrl(dialogEditData.value.avatarUrl)
-  } else {
-    currentAvatarUrl.value = ''
-  }
-})
 // 校验头像
 const beforeAvatarUpload = (rawFile) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg']
@@ -373,6 +383,35 @@ const beforeAvatarUpload = (rawFile) => {
   }
   return true
 }
+// 选择的用户角色
+const rolesSelectedData = ref([])
+// 角色表
+const rolesList = ref([])
+// 查询用户对应角色
+const loadUserRoles = async (id) => {
+  rolesSelectedData.value = []
+  try {
+    const res = await request.get(`/user/list-roles/${id}`)
+    rolesSelectedData.value = res.data.map(d => d.id)
+  } catch (err) {
+    ElMessage.error(err.msg || '用户角色信息查询失败')
+  }
+}
+
+// 每当对话框打开执行回调
+watch(showDialog, newValue => {
+  // 如果不是关联行的对话框，啥也不干
+  const skip = ['创建用户', '确认批量删除', '确认批量封禁', '确认批量解封', '确认重设密码']
+  if (skip.includes(dialogTitle.value)) return
+  if (newValue) {
+    // 加载头像
+    loadCurrentAvatarUrl(dialogEditData.value.avatarUrl)
+    // 查询对应用户的角色
+    loadUserRoles(dialogEditData.value.id)
+  } else {
+    currentAvatarUrl.value = ''
+  }
+})
 
 const loading = ref(false)
 // 表格数据
@@ -438,13 +477,16 @@ const handleSelectionChange = (selection) => {
 // 刷新表格数据
 const loadTableData = async () => {
   try {
+    // 请求用户表数据
     const response = await request.get('user/list', {
       pageNo: pagination.value.currentPage,
       pageSize: pagination.value.pageSize
     })
     tableData.value = response.data.list
     pagination.value.total = response.data.total
-
+    // 请求角色表数据
+    const roleTableData = await request.get('role/view')
+    rolesList.value = roleTableData.data.list
   } catch (e) {
     tableData.value = []
     if (e.msg) {

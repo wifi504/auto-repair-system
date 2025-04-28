@@ -3,7 +3,7 @@ import axios from 'axios'
 // 封装 HTTP Request 请求
 
 // 开发模式自动控制台输出所有请求对象
-const dev = true
+const dev = false
 
 // 创建 Axios 实例
 const instance = axios.create({
