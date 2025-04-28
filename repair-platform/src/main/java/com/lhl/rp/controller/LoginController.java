@@ -4,6 +4,7 @@ import com.lhl.rp.bean.LoginUser;
 import com.lhl.rp.config.TokenConfig;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
+import com.lhl.rp.service.TUserService;
 import com.lhl.rp.util.CaptchaManagerUtil;
 import com.lhl.rp.util.JwtUtil;
 import com.lhl.rp.util.TokenCacheHolder;
@@ -37,6 +38,9 @@ public class LoginController {
     @Autowired
     private TokenConfig tokenConfig;
 
+    @Autowired
+    private TUserService tUserService;
+
     // 认证
     @PostMapping("/login")
     public R<?> login(@RequestBody Map<String, String> user) {
@@ -62,6 +66,16 @@ public class LoginController {
 
         // 获取用户信息
         LoginUser loginUser = (LoginUser) auth.getPrincipal();
+
+        // 查询该用户状态是否正常
+        Byte status = tUserService.selectByName(loginUser.getUsername()).getStatus();
+        if (status == 0) {
+            // 账户被封禁
+            return R.error(ResultCode.UNAUTHORIZED, "用户被封禁！");
+        } else if (status == 2) {
+            // 账户不存在
+            return R.error(ResultCode.UNAUTHORIZED, "用户不存在！");
+        }
 
         // 配置文件读取 Token 有效期
         long ttlMillis = tokenConfig.getTtlSecond() * 1000L;

@@ -10,6 +10,7 @@ import com.lhl.rp.dto.UserDto;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.TUserService;
+import com.lhl.rp.util.TokenCacheHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -125,8 +126,13 @@ public class UserController {
         if (tUser == null || tUser.getStatus() != 1) {
             return R.error(ResultCode.FAIL, "用户不存在或已被封禁");
         }
+        if (tUser.getId() == 1) {
+            return R.error(ResultCode.FAIL, "系统管理员不可封禁！");
+        }
         tUser.setStatus((byte) 0);
         int count = tUserService.updateById(tUser);
+        // 登出该用户
+        TokenCacheHolder.removeAll(tUser.getLoginAct());
         return R.ok(null, "已封禁" + count + "个用户");
     }
 
@@ -159,8 +165,13 @@ public class UserController {
         });
         AtomicInteger count = new AtomicInteger();
         tUsers.forEach(tUser -> {
+            if (tUser.getId() == 1) {
+                throw new RuntimeException("系统管理员不可封禁！");
+            }
             tUser.setStatus((byte) 0);
             count.addAndGet(tUserService.updateById(tUser));
+            // 登出该用户
+            TokenCacheHolder.removeAll(tUser.getLoginAct());
         });
         if (count.get() != tUsers.size()) {
             throw new RuntimeException("部分用户封禁失败，已回滚");
@@ -204,7 +215,12 @@ public class UserController {
         if (tUser == null) {
             return R.error(ResultCode.FAIL, "用户不存在");
         }
+        if (tUser.getId() == 1) {
+            return R.error(ResultCode.FAIL, "系统管理员不可删除！");
+        }
         tUser.setStatus((byte) 2);
+        // 登出该用户
+        TokenCacheHolder.removeAll(tUser.getLoginAct());
         return R.ok(null, "已删除" + tUserService.updateById(tUser) + "个用户");
     }
 
@@ -221,6 +237,9 @@ public class UserController {
                 if (tUser == null || tUser.getStatus() == 2) {
                     return R.error(ResultCode.FAIL, "部分用户不存在");
                 }
+                if (tUser.getId() == 1) {
+                    throw new RuntimeException("系统管理员不可删除！");
+                }
                 tUser.setStatus((byte) 2);
                 tUsers.add(tUser);
             }
@@ -229,6 +248,8 @@ public class UserController {
         if (count != tUsers.size()) {
             throw new RuntimeException("部分用户删除失败，已回滚");
         }
+        // 登出这些用户
+        tUsers.forEach(tUser -> TokenCacheHolder.removeAll(tUser.getLoginAct()));
         return R.ok(null, "已删除" + count + "个用户");
     }
 
