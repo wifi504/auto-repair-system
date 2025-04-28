@@ -40,6 +40,12 @@
     from t_user
     where `status` != 2
   </select>
+  <select id="selectRolesByUserId" resultMap="com.lhl.rp.repository.TRoleMapper.BaseResultMap">
+    SELECT tr.*
+    FROM t_user_role tur
+           LEFT JOIN t_role tr ON tr.id = tur.role_id
+    WHERE tur.user_id = #{userId}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from t_user
     where id = #{id,jdbcType=BIGINT}
@@ -50,6 +56,11 @@
     <foreach collection="list" item="id" open="(" separator="," close=")">
       #{id}
     </foreach>
+  </delete>
+  <delete id="deleteUserRoles">
+    DELETE
+    FROM t_user_role
+    WHERE user_id = #{userId}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.lhl.rp.bean.TUser" useGeneratedKeys="true">
     insert into t_user (login_act, login_pwd, real_name, 
@@ -121,6 +132,13 @@
         #{createTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
+  </insert>
+  <insert id="addUserRoles">
+    insert into t_user_role (user_id, role_id)
+    values
+    <foreach collection="roleIds" item="roleId" separator=",">
+      (#{userId}, #{roleId})
+    </foreach>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.lhl.rp.bean.TUser">
     update t_user

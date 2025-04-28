@@ -3,7 +3,9 @@ package com.lhl.rp.controller;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.lhl.rp.bean.LoginUser;
+import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
+import com.lhl.rp.dto.RoleIdsDto;
 import com.lhl.rp.dto.UserDto;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
@@ -284,6 +286,38 @@ public class UserController {
         }
 
         return R.ok(loginUser.getTUser());
+    }
+
+    /**
+     * 根据用户查询用户角色
+     *
+     * @param id 用户ID
+     * @return 角色列表
+     */
+    @GetMapping("/list-roles/{id}")
+    public R<?> listRoles(@PathVariable String id) {
+        try {
+            List<TRole> tRoles = tUserService.consultAllRolesByUserId(Long.parseLong(id));
+            return R.ok(tRoles);
+        } catch (NumberFormatException e) {
+            return R.error(ResultCode.FAIL, "用户ID格式错误");
+        }
+    }
+
+    /**
+     * 编辑用户角色列表
+     *
+     * @param roleIdsDto 角色ID列表
+     * @return 操作状态
+     */
+    @PutMapping("/edit-roles")
+    public R<?> editRoles(@RequestBody RoleIdsDto roleIdsDto) {
+        try {
+            int count = tUserService.updateUserRoles(roleIdsDto.getUserId(), roleIdsDto.getIdList());
+            return R.ok(null, "已更新" + count + "个用户角色");
+        } catch (Exception e) {
+            return R.error(ResultCode.FAIL, "更新失败" + e.getMessage());
+        }
     }
 
     /**

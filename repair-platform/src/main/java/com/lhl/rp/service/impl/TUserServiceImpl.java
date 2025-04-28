@@ -1,5 +1,6 @@
 package com.lhl.rp.service.impl;
 
+import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
 import com.lhl.rp.repository.TUserMapper;
 import com.lhl.rp.service.TUserService;
@@ -129,5 +130,44 @@ public class TUserServiceImpl implements TUserService {
         }
         if (count != userList.size()) throw new RuntimeException("部分条目更新失败，已回滚");
         return count;
+    }
+
+    /**
+     * 根据主键查询用户所拥有的角色
+     *
+     * @param userId 用户id
+     * @return 角色列表
+     */
+    @Override
+    public List<TRole> consultAllRolesByUserId(long userId) {
+        return tUserMapper.selectRolesByUserId(userId);
+    }
+
+    /**
+     * 更新用户角色列表
+     *
+     * @param userId  用户id
+     * @param roleIds 角色id列表
+     * @return 更新数量
+     */
+    @Transactional
+    @Override
+    public int updateUserRoles(Long userId, List<Long> roleIds) {
+        TUser tUser = tUserMapper.selectByPrimaryKey(userId);
+        if (tUser == null) throw new RuntimeException("用户不存在");
+        if (roleIds == null || roleIds.isEmpty()) {
+            // TODO 默认添加游客角色的id，但是这种操作并没有考虑到角色表的动态性
+            roleIds = new java.util.ArrayList<>();
+            roleIds.add(6L);
+        }
+        // 1. 删除用户所有角色
+        int c1 = tUserMapper.deleteUserRoles(userId);
+        // 2. 添加用户角色
+        int c2 = tUserMapper.addUserRoles(userId, roleIds);
+        // 3. 检查是否成功
+        if (c1 != -1 && c2 == roleIds.size()) {
+            return c2;
+        }
+        throw new RuntimeException("更新失败");
     }
 }

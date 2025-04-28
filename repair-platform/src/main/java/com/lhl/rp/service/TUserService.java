@@ -1,5 +1,6 @@
 package com.lhl.rp.service;
 
+import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
 
 import java.util.List;
@@ -55,4 +56,21 @@ public interface TUserService {
      * 根据主键批量更新用户
      */
     int updateByIds(List<TUser> userList);
+
+    /**
+     * 根据主键查询用户所拥有的角色
+     *
+     * @param userId 用户id
+     * @return 角色列表
+     */
+    List<TRole> consultAllRolesByUserId(long userId);
+
+    /**
+     * 更新用户角色列表
+     *
+     * @param userId  用户id
+     * @param roleIds 角色id列表
+     * @return 更新数量
+     */
+    int updateUserRoles(Long userId, List<Long> roleIds);
 }

@@ -19,3 +19,7 @@ minio:
   # 访问密钥
   access-key: repair-sys-oss
   secret-key: r5DzwPtp7fSTGzUZVRS7
+
+logging:
+  level:
+    com.lhl.rp: debug

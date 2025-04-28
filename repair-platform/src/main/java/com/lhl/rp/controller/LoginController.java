@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
+ * 登录相关API，此控制器所有API权限为 Public
+ *
  * @author WIFI连接超时
  * @version 1.0
  * Create Time 2025/3/27_0:48
