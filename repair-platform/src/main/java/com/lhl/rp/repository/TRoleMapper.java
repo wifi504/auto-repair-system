@@ -1,5 +1,6 @@
 package com.lhl.rp.repository;
 
+import com.lhl.rp.bean.TPermission;
 import com.lhl.rp.bean.TRole;
 
 import java.util.List;
@@ -20,4 +21,12 @@ public interface TRoleMapper {
     List<TRole> selectAll();
 
     int deleteByPrimaryKeys(List<Long> ids);
+
+    List<TPermission> listPermission(Long roleId);
+
+    int deleteRolePermissions(Long roleId);
+
+    int addRolePermissions(Long roleId, List<Long> permissionIds);
+
+    TRole selectByCode(String code);
 }

@@ -1,5 +1,6 @@
 package com.lhl.rp.service;
 
+import com.lhl.rp.bean.TPermission;
 import com.lhl.rp.bean.TRole;
 
 import java.util.List;
@@ -52,6 +53,15 @@ public interface TRoleService {
      */
     int deleteByIds(List<Long> ids);
 
+
+    /**
+     * 根据角色标识符查询角色
+     *
+     * @param code 角色标识符
+     * @return 角色Bean
+     */
+    TRole consultByCode(String code);
+
     /**
      * 创建角色
      *
@@ -59,4 +69,29 @@ public interface TRoleService {
      * @return 成功记录条数
      */
     int creatRole(TRole tRole);
+
+    /**
+     * 根据角色查询角色权限
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    List<TPermission> listPermission(Long roleId);
+
+    /**
+     * 根据角色查询角色API权限ID
+     *
+     * @param roleId 角色ID
+     * @return 权限ID列表
+     */
+    List<Long> listPermissionIds(Long roleId);
+
+    /**
+     * 更新角色权限列表
+     *
+     * @param roleId        角色ID
+     * @param permissionIds 权限ID列表
+     * @return 更新记录条数
+     */
+    int updateRolePermissions(Long roleId, List<Long> permissionIds);
 }

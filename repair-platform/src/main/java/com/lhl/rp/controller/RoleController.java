@@ -3,9 +3,13 @@ package com.lhl.rp.controller;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.lhl.rp.bean.TRole;
+import com.lhl.rp.dto.PermissionIdsDto;
 import com.lhl.rp.dto.RoleDto;
 import com.lhl.rp.result.R;
+import com.lhl.rp.result.ResultCode;
+import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TRoleService;
+import com.lhl.rp.service.impl.TPermissionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +29,9 @@ public class RoleController {
     @Autowired
     TRoleService tRoleService;
 
+    @Autowired
+    TPermissionService tPermissionService;
+
     /**
      * 查询角色
      */
@@ -39,6 +46,9 @@ public class RoleController {
         return R.ok(new PageInfo<>(tRoles));
     }
 
+    /**
+     * 修改角色
+     */
     @PreAuthorize("hasAuthority('role:update')")
     @PutMapping("/update")
     public R<?> update(@RequestBody RoleDto roleDto) {
@@ -50,6 +60,9 @@ public class RoleController {
         return R.ok(null, "成功更新" + tRoleService.updateById(tRole) + "条数据！");
     }
 
+    /**
+     * 删除角色
+     */
     @PreAuthorize("hasAuthority('role:delete')")
     @DeleteMapping("/delete")
     public R<?> delete(@RequestBody List<RoleDto> roleDtoList) {
@@ -66,6 +79,9 @@ public class RoleController {
     }
 
 
+    /**
+     * 新增角色
+     */
     @PreAuthorize("hasAuthority('role:create')")
     @PostMapping("/create")
     public R<?> create(@RequestBody RoleDto roleDto) {
@@ -75,6 +91,50 @@ public class RoleController {
                 .remark(roleDto.getRemark())
                 .orderNum(roleDto.getOrderNum())
                 .build();
-        return R.ok(null, "成功创建" + tRoleService.creatRole(newRole) + "条数据！");
+        tRoleService.creatRole(newRole);
+        TRole tRole = tRoleService.consultByCode(newRole.getCode());
+        return R.ok(tRole, "成功创建角色：" + tRole.getName() + "！");
+    }
+
+    /**
+     * 获取系统权限列表
+     */
+    @PreAuthorize("hasAuthority('role:list-all-permission')")
+    @GetMapping("/list-all-permission")
+    public R<?> listAllPermission() {
+        // 查询权限表所有数据
+        List<TPermissionServiceImpl.PermissionNode> list = tPermissionService.consultAllPermissionByTree();
+        // 返回前端
+        return R.ok(list);
+    }
+
+    /**
+     * 根据角色查询角色权限
+     */
+    @PreAuthorize("hasAuthority('role:list-permission')")
+    @GetMapping("/list-permission/{roleId}")
+    public R<?> listPermission(@PathVariable String roleId) {
+        try {
+            return R.ok(tRoleService.listPermissionIds(Long.parseLong(roleId)));
+        } catch (NumberFormatException e) {
+            return R.error(ResultCode.FAIL, "角色ID应为数字");
+        }
+    }
+
+    /**
+     * 编辑角色权限列表
+     */
+    @PreAuthorize("hasAuthority('role:edit-permission')")
+    @PutMapping("/edit-permission")
+    public R<?> editPermission(@RequestBody PermissionIdsDto permissionIdsDto) {
+        try {
+            // 更新角色权限
+            int count = tRoleService.updateRolePermissions(
+                    permissionIdsDto.getRoleId(),
+                    permissionIdsDto.getIdList());
+            return R.ok(null, "已更新" + count + "个角色权限");
+        } catch (Exception e) {
+            return R.error(ResultCode.FAIL, "更新失败" + e.getMessage());
+        }
     }
 }

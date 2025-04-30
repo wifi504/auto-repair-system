@@ -64,7 +64,9 @@ public class UserController {
             tUser.setLoginPwd(bCryptPasswordEncoder.encode("pwd123456"));
         }
         tUser.setCreateTime(new Date());
-        return R.ok(null, "已创建" + tUserService.insert(tUser) + "个用户");
+        tUserService.insert(tUser);
+        TUser realTUser = tUserService.selectByName(tUser.getLoginAct());
+        return R.ok(realTUser, "已创建用户：" + realTUser.getNickname() + "！");
     }
 
     /**

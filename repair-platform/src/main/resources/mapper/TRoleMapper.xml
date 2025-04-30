@@ -25,6 +25,19 @@
     ORDER BY
     order_num ASC
   </select>
+  <select id="listPermission" resultMap="com.lhl.rp.repository.TPermissionMapper.BaseResultMap">
+    SELECT tp.*
+    FROM t_role tr
+           LEFT JOIN t_role_permission trp ON tr.id = trp.role_id
+           LEFT JOIN t_permission tp ON trp.permission_id = tp.id
+    WHERE tr.id = ${roleId}
+  </select>
+  <select id="selectByCode" resultType="com.lhl.rp.bean.TRole">
+    select
+    <include refid="Base_Column_List"/>
+    from t_role
+    where code = #{code}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from t_role
     where id = #{id,jdbcType=BIGINT}
@@ -35,6 +48,11 @@
     <foreach collection="list" item="id" open="(" separator="," close=")">
       #{id}
     </foreach>
+  </delete>
+  <delete id="deleteRolePermissions">
+    DELETE
+    FROM t_role_permission
+    WHERE role_id = #{roleId}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.lhl.rp.bean.TRole" useGeneratedKeys="true">
     insert into t_role (order_num, code, `name`,
@@ -72,6 +90,13 @@
         #{remark,jdbcType=VARCHAR},
       </if>
     </trim>
+  </insert>
+  <insert id="addRolePermissions">
+    INSERT INTO t_role_permission (role_id, permission_id)
+    VALUES
+    <foreach collection="permissionIds" item="permissionId" separator=",">
+      (#{roleId}, #{permissionId})
+    </foreach>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.lhl.rp.bean.TRole">
     update t_role
