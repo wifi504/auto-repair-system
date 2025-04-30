@@ -1,5 +1,9 @@
 <template>
-  <div class="avatar-box" :class="imageUrl ? '' : 'avatar-box-background'">
+  <div class="avatar-box"
+       :class="`${imageUrl ? '' : 'avatar-box-background'}
+       ${prop.type === 'square' ? 'avatar-box-square' : 'avatar-box-circle'}`"
+       :style="`width: ${prop.size}px; height: ${prop.size}px;`"
+  >
     <img v-if="imageUrl" :src="imageUrl" alt="用户头像" class="avatar-img">
     <component v-else :is="Avatar" class="avatar-default"></component>
   </div>
@@ -14,6 +18,14 @@ const prop = defineProps({
   avatarName: {
     type: String,
     default: ''
+  },
+  type: {
+    type: String,
+    default: 'square'
+  },
+  size: {
+    type: Number,
+    default: 32
   }
 })
 
@@ -33,12 +45,17 @@ onUpdated(loadImage)
 
 <style scoped>
 .avatar-box {
-  width: 60px;
-  height: 60px;
   text-align: center;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+}
+
+.avatar-box-square {
+  border-radius: 10%;
+}
+
+.avatar-box-circle {
+  border-radius: 50%;
 }
 
 .avatar-box-background {

@@ -8,12 +8,12 @@
       <!-- 用户信息展示 -->
       <el-descriptions title="用户信息" v-if="hasLogin" :column="1" border>
         <el-descriptions-item label="用户名">{{ userDetail.data.nickname }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ userDetail.data.createTime}}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ userDetail.data.createTime }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ userDetail.data.email }}</el-descriptions-item>
       </el-descriptions>
 
       <!-- 未登录提示 -->
-      <el-alert v-else title="您当前未登录，请先登录以查看用户信息" type="warning" show-icon />
+      <el-alert v-else title="您当前未登录，请先登录以查看用户信息" type="warning" show-icon/>
 
       <el-divider></el-divider>
 
@@ -32,6 +32,7 @@
 import request from "@/utils/request.js"
 import {onMounted, ref} from "vue"
 import {useRouter} from "vue-router"
+import {ElMessage} from "element-plus";
 
 const router = useRouter()
 const hasLogin = ref(false)
@@ -40,9 +41,10 @@ const userDetail = ref({})
 onMounted(async () => {
   try {
     userDetail.value = await request.get('user/current')
+    console.log(userDetail.value)
     hasLogin.value = true
   } catch (error) {
-    console.error('获取用户信息失败:', error)
+    ElMessage.error(`获取用户信息失败：${error.msg}`)
     hasLogin.value = false
   }
 })

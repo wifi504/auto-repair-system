@@ -241,7 +241,7 @@ const loadTableData = async () => {
   } catch (e) {
     tableData.value = []
     if (e.msg) {
-      ElMessage.error(`请求失败：${e.msg}`)
+      ElMessage.error(`请求角色表：${e.msg}`)
     }
   } finally {
     loading.value = false

@@ -24,7 +24,10 @@
     >
       <!-- 使用插槽自定义列 -->
       <template #avatarUrl="{ row }">
-        <async-avatar :avatar-name="row.avatarUrl"/>
+        <async-avatar
+            type="square"
+            :size="60"
+            :avatar-name="row.avatarUrl"/>
       </template>
       <template #status="{ row }">
         <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -226,7 +229,7 @@ const doDelList = async () => {
     ElMessage.success(`删除成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`删除失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
     isDialogLoading.value = false
@@ -248,7 +251,7 @@ const createOnce = async () => {
           ElMessage.success(`创建成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
-          ElMessage.error(`创建失败：${e.msg || e.message || 'error'}`)
+          ElMessage.error(`创建失败：${e.msg || 'error'}`)
         } finally {
           showDialog.value = false
           isDialogLoading.value = false
@@ -265,7 +268,7 @@ const doResetPwd = async () => {
     ElMessage.success(`重置成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`重置失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`重置失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
     isDialogLoading.value = false
@@ -283,7 +286,7 @@ const changeBan = async (row) => {
     ElMessage.success(`操作成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`操作失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`操作失败：${e.msg || 'error'}`)
   }
 }
 // 批量封禁用户
@@ -294,7 +297,7 @@ const doBanList = async () => {
     ElMessage.success(`封禁成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`封禁失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`封禁失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
     isDialogLoading.value = false
@@ -308,7 +311,7 @@ const doUnbanList = async () => {
     ElMessage.success(`解封成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`解封失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`解封失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
     isDialogLoading.value = false
@@ -356,7 +359,7 @@ const uploadUserAvatar = async (options) => {
     const url = new URL(res.data).pathname.split('/')
     dialogEditData.value.avatarUrl = url[url.length - 1]
   } catch (err) {
-    ElMessage.error(err.msg || '上传头像请求失败')
+    ElMessage.error(`上传头像：${err.msg}`)
   }
 }
 // 获取头像预签名链接
@@ -395,7 +398,7 @@ const loadUserRoles = async (id) => {
     const res = await request.get(`/user/list-roles/${id}`)
     rolesSelectedData.value = res.data.map(d => d.id)
   } catch (err) {
-    ElMessage.error(err.msg || '用户角色信息查询失败')
+    ElMessage.error(`查询用户角色：${err.msg}`)
   }
 }
 
@@ -485,14 +488,16 @@ const loadTableData = async () => {
     })
     tableData.value = response.data.list
     pagination.value.total = response.data.total
+  } catch (e) {
+    tableData.value = []
+    ElMessage.error(`请求用户表：${e.msg}`)
+  }
+  try {
     // 请求角色表数据
     const roleTableData = await request.get('role/view')
     rolesList.value = roleTableData.data.list
   } catch (e) {
-    tableData.value = []
-    if (e.msg) {
-      ElMessage.error(`请求失败：${e.msg}`)
-    }
+    ElMessage.error(`请求角色表：${e.msg}`)
   } finally {
     loading.value = false
   }
