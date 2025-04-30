@@ -114,8 +114,10 @@ const loadCurrentLoginUser = async () => {
     currentLoginUserAvatar.value = res.data.avatarUrl
   } catch (err) {
     ElMessage.error(`获取当前登录用户：${err.msg}`)
-    if (err.code === 401) await router.push('/login')
-    ElMessage.warning(`请重新登录！`)
+    if (err.code === 401) {
+      await router.push('/login')
+      ElMessage.warning(`请重新登录！`)
+    }
   }
 }
 

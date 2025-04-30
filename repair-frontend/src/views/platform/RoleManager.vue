@@ -56,10 +56,22 @@
           <el-divider/>
           <el-form-item label="角色权限">
             <el-tree-select
+                v-model="permissionsSelectedData"
+                :data="permissionsList"
                 multiple
                 :render-after-expand="false"
                 show-checkbox
-            />
+                class="dialog-tree-selector"
+            >
+              <template #prefix>
+                <span>
+                  {{
+                    permissionsSelectedData.length ?
+                        `当前选择了 ${permissionsSelectedData.length} 项 API` : '权限为空，请选择'
+                  }}
+                </span>
+              </template>
+            </el-tree-select>
           </el-form-item>
         </el-form>
       </template>
@@ -75,7 +87,7 @@
 </template>
 
 <script setup>
-import {ref, onActivated} from 'vue'
+import {ref, onActivated, onMounted, watch} from 'vue'
 import {ElMessage} from "element-plus";
 import {UserFilled} from "@element-plus/icons-vue";
 import request from "@/utils/request.js";
@@ -104,11 +116,16 @@ const submit = async () => {
     await dialogFormRef.value.validate(async (valid) => {
       if (valid) {
         try {
-          const response = await request.put('role/update', dialogEditData.value)
-          ElMessage.success(`提交成功：${response.msg || 'success'}`)
+          const res2 = await request.put('/role/edit-permission', {
+            roleId: dialogEditData.value.id,
+            idList: permissionsSelectedData.value
+          })
+          const res1 = await request.put('/role/update', dialogEditData.value)
+          const msg = res1.msg + "；" + res2.msg
+          ElMessage.success(`提交成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
-          ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
+          ElMessage.error(`提交失败：${e.msg || 'error'}`)
         } finally {
           showDialog.value = false
         }
@@ -128,7 +145,7 @@ const delOnce = async () => {
     ElMessage.success(`删除成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`提交失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
   }
@@ -140,7 +157,7 @@ const doDelList = async () => {
     ElMessage.success(`删除成功：${response.msg || 'success'}`)
     refreshTableData()
   } catch (e) {
-    ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
+    ElMessage.error(`提交失败：${e.msg || 'error'}`)
   } finally {
     showDialog.value = false
   }
@@ -151,11 +168,16 @@ const createOnce = async () => {
     await dialogFormRef.value.validate(async (valid) => {
       if (valid) {
         try {
-          const response = await request.post('role/create', dialogEditData.value)
-          ElMessage.success(`创建成功：${response.msg || 'success'}`)
+          const res1 = await request.post('/role/create', dialogEditData.value)
+          const res2 = await request.put('/role/edit-permission', {
+            roleId: res1.data.id,
+            idList: permissionsSelectedData.value
+          })
+          const msg = res1.msg + "；" + res2.msg
+          ElMessage.success(`创建成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
-          ElMessage.error(`创建失败：${e.msg || e.message || 'error'}`)
+          ElMessage.error(`创建失败：${e.msg || 'error'}`)
         } finally {
           showDialog.value = false
         }
@@ -175,6 +197,49 @@ const deleteByList = () => {
   dialogTitle.value = '确认批量删除'
   showDialog.value = true
 }
+
+// 系统权限表
+const permissionsList = ref([])
+// 获取系统权限列表
+const loadPermissionList = async () => {
+  try {
+    const res = await request.get('/role/list-all-permission')
+    permissionsList.value = res.data
+  } catch (err) {
+    ElMessage.error(`获取系统权限列表：${err.msg}`)
+  }
+}
+// 选择的角色权限
+const permissionsSelectedData = ref([])
+// 查询角色对应的权限
+const loadRolePermissions = async (id) => {
+  permissionsSelectedData.value = []
+  // 如果是新增角色没有ID，不执行查询
+  if (!Number.isInteger(id)) return
+  try {
+    const res = await request.get(`/role/list-permission/${id}`)
+    permissionsSelectedData.value = res.data
+  } catch (err) {
+    ElMessage.error(`查询角色权限：${err.msg}`)
+  }
+}
+
+// 每当对话框打开执行回调
+watch(showDialog, newValue => {
+  // 如果不是关联行的对话框，啥也不干
+  const skip = ['创建用户', '确认批量删除', '确认批量封禁', '确认批量解封', '确认重设密码']
+  if (skip.includes(dialogTitle.value)) return
+  if (newValue) {
+    // 查询对应角色的权限
+    loadRolePermissions(dialogEditData.value.id)
+  } else {
+    permissionsSelectedData.value = []
+  }
+})
+// 组件加载时获取系统权限表
+onMounted(() => {
+  loadPermissionList()
+})
 
 const loading = ref(false)
 // 表格数据
@@ -255,5 +320,10 @@ const refreshTableData = () => {
 onActivated(() => refreshTableData())
 </script>
 
-<style scoped>
+<style>
+/* 强行隐藏掉已选择的权限 */
+.dialog-tree-selector .el-select__wrapper .el-select__selection .el-select__selected-item {
+  background: #000;
+  display: none;
+}
 </style>

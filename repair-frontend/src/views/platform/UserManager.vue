@@ -184,7 +184,7 @@ const submit = async () => {
       if (valid) {
         try {
           isDialogLoading.value = true
-          const res1 = await request.put('user/edit', dialogEditData.value)
+          const res1 = await request.put('/user/edit', dialogEditData.value)
           const res2 = await request.put('/user/edit-roles', {
             userId: dialogEditData.value.id,
             idList: rolesSelectedData.value
@@ -193,7 +193,7 @@ const submit = async () => {
           ElMessage.success(`提交成功：${msg || 'success'}`)
           refreshTableData()
         } catch (e) {
-          ElMessage.error(`提交失败：${e.msg || e.message || 'error'}`)
+          ElMessage.error(`提交失败：${e.msg || 'error'}`)
         } finally {
           showDialog.value = false
           isDialogLoading.value = false
@@ -242,9 +242,9 @@ const createOnce = async () => {
       if (valid) {
         try {
           isDialogLoading.value = true
-          const res1 = await request.post('user/create', dialogEditData.value)
+          const res1 = await request.post('/user/create', dialogEditData.value)
           const res2 = await request.put('/user/edit-roles', {
-            userId: dialogEditData.value.id,
+            userId: res1.data.id,
             idList: rolesSelectedData.value
           })
           const msg = res1.msg + "；" + res2.msg
