@@ -7,6 +7,7 @@ import com.lhl.rp.dto.RoleDto;
 import com.lhl.rp.result.R;
 import com.lhl.rp.service.TRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class RoleController {
     /**
      * 查询角色
      */
+    @PreAuthorize("hasAuthority('role:view')")
     @GetMapping("/view")
     public R<PageInfo<TRole>> view(@RequestParam(defaultValue = "1") Integer pageNo,
                                    @RequestParam(defaultValue = "10") Integer pageSize
@@ -37,6 +39,7 @@ public class RoleController {
         return R.ok(new PageInfo<>(tRoles));
     }
 
+    @PreAuthorize("hasAuthority('role:update')")
     @PutMapping("/update")
     public R<?> update(@RequestBody RoleDto roleDto) {
         TRole tRole = tRoleService.consultById(roleDto.getId());
@@ -47,6 +50,7 @@ public class RoleController {
         return R.ok(null, "成功更新" + tRoleService.updateById(tRole) + "条数据！");
     }
 
+    @PreAuthorize("hasAuthority('role:delete')")
     @DeleteMapping("/delete")
     public R<?> delete(@RequestBody List<RoleDto> roleDtoList) {
         int count = -1;
@@ -62,6 +66,7 @@ public class RoleController {
     }
 
 
+    @PreAuthorize("hasAuthority('role:create')")
     @PostMapping("/create")
     public R<?> create(@RequestBody RoleDto roleDto) {
         TRole newRole = TRole.builder()

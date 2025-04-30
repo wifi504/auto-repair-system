@@ -73,4 +73,12 @@ public interface TUserService {
      * @return 更新数量
      */
     int updateUserRoles(Long userId, List<Long> roleIds);
+
+    /**
+     * 根据用户查询用户权限
+     *
+     * @param userId 用户ID
+     * @return 权限标识符列表
+     */
+    List<String> queryPermissionCodes(long userId);
 }

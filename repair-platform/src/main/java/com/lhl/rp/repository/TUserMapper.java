@@ -31,4 +31,6 @@ public interface TUserMapper {
     int deleteUserRoles(Long userId);
 
     int addUserRoles(Long userId, List<Long> roleIds);
+
+    List<String> queryPermissionCodes(long userId);
 }

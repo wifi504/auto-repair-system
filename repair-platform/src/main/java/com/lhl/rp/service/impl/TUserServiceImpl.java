@@ -170,4 +170,15 @@ public class TUserServiceImpl implements TUserService {
         }
         throw new RuntimeException("更新失败");
     }
+
+    /**
+     * 根据用户查询用户权限
+     *
+     * @param userId 用户ID
+     * @return 权限标识符列表
+     */
+    @Override
+    public List<String> queryPermissionCodes(long userId) {
+        return tUserMapper.queryPermissionCodes(userId);
+    }
 }

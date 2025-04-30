@@ -5,6 +5,7 @@ import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.FileService;
 import com.lhl.rp.service.exception.FileServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +22,7 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
+    @PreAuthorize("hasAuthority('file:upload-avatars')")
     @PostMapping("/upload-avatars")
     public R<?> uploadAvatars(@RequestParam("file") MultipartFile file) {
         try {
@@ -30,6 +32,7 @@ public class FileController {
         }
     }
 
+    @PreAuthorize("hasAuthority('file:get-avatars-url')")
     @GetMapping("/get-avatars-url/{avatarName}")
     public R<?> getAvatarsUrl(@PathVariable String avatarName) {
         try {

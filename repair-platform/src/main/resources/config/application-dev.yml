@@ -22,4 +22,4 @@ minio:
 
 logging:
   level:
-    com.lhl.rp: debug
+    com.lhl.rp: error

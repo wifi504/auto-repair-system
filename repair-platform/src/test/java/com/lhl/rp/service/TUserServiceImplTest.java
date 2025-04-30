@@ -84,4 +84,11 @@ public class TUserServiceImplTest {
         assertEquals(3, count);
         System.out.println(count);
     }
+
+    @Test
+    public void testQueryPermissionCodes() {
+        List<String> codes = tUserService.queryPermissionCodes(2L);
+        assertNotNull(codes);
+        codes.forEach(System.out::println);
+    }
 }

@@ -3,10 +3,12 @@ package com.lhl.rp.bean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author WIFI连接超时
@@ -18,14 +20,17 @@ import java.util.List;
 @AllArgsConstructor
 public class LoginUser implements UserDetails {
 
-    /**
-     * 逆向工程实体类
-     */
+    // 逆向工程实体类
     private TUser tUser;
+
+    // 用户的权限标识符列表
+    private List<String> permissionCodes;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // TODO 增加权限
+        return permissionCodes.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     @Override

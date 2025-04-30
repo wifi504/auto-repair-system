@@ -12,6 +12,7 @@ import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.TUserService;
 import com.lhl.rp.util.TokenCacheHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -45,6 +46,7 @@ public class UserController {
      * 新增用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:create')")
     @PostMapping("/create")
     public R<?> create(@RequestBody UserDto userDto) {
         if (userDto == null) {
@@ -69,6 +71,7 @@ public class UserController {
      * 修改用户信息
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:edit')")
     @PutMapping("/edit")
     public R<?> edit(@RequestBody UserDto userDto) {
         TUser tUser = tUserService.selectById(userDto.getId());
@@ -87,6 +90,7 @@ public class UserController {
      * 重置用户密码
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:reset-pwd')")
     @GetMapping("/reset-pwd/{id}")
     public R<?> resetPwd(@PathVariable() Long id) {
         TUser tUser = tUserService.selectById(id);
@@ -102,6 +106,7 @@ public class UserController {
      * 批量重置用户密码
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:reset-pwd-list')")
     @PostMapping("/reset-pwd-list")
     public R<?> resetPwd(@RequestBody List<UserDto> userDtoList) {
         int count = 0;
@@ -120,6 +125,7 @@ public class UserController {
      * 封禁用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:ban')")
     @GetMapping("/ban/{id}")
     public R<?> ban(@PathVariable Long id) {
         TUser tUser = tUserService.selectById(id);
@@ -140,6 +146,7 @@ public class UserController {
      * 解封用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:unban')")
     @GetMapping("/unban/{id}")
     public R<?> unban(@PathVariable Long id) {
         TUser tUser = tUserService.selectById(id);
@@ -155,6 +162,7 @@ public class UserController {
      * 批量封禁用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:ban-list')")
     @PostMapping("/ban-list")
     public R<?> banList(@RequestBody List<UserDto> userDtoList) {
         ArrayList<TUser> tUsers = new ArrayList<>();
@@ -183,6 +191,7 @@ public class UserController {
      * 批量解封用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:unban-list')")
     @PostMapping("/unban-list")
     public R<?> unbanList(@RequestBody List<UserDto> userDtoList) {
         ArrayList<TUser> tUsers = new ArrayList<>();
@@ -206,6 +215,7 @@ public class UserController {
      * 逻辑删除用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:remove')")
     @DeleteMapping("/remove")
     public R<?> remove(@RequestBody UserDto userDto) {
         if (userDto == null) {
@@ -228,6 +238,7 @@ public class UserController {
      * 批量逻辑删除用户
      */
     @Transactional
+    @PreAuthorize("hasAuthority('user:remove-all')")
     @DeleteMapping("/remove-all")
     public R<?> removeAll(@RequestBody List<UserDto> userDtoList) {
         ArrayList<TUser> tUsers = new ArrayList<>();
@@ -256,6 +267,7 @@ public class UserController {
     /**
      * 物理删除用户
      */
+    @PreAuthorize("hasAuthority('user:delete')")
     @DeleteMapping("/delete")
     public R<?> delete(@RequestBody UserDto userDto) {
         return R.error(ResultCode.FORBIDDEN, "暂时不允许直接删除用户数据！");
@@ -264,6 +276,7 @@ public class UserController {
     /**
      * 批量物理删除用户
      */
+    @PreAuthorize("hasAuthority('user:delete-all')")
     @DeleteMapping("/delete-all")
     public R<?> deleteAll(@RequestBody List<UserDto> userDtoList) {
         return R.error(ResultCode.FORBIDDEN, "暂时不允许直接删除用户数据！");
@@ -272,6 +285,7 @@ public class UserController {
     /**
      * 查询用户
      */
+    @PreAuthorize("hasAuthority('user:view')")
     @GetMapping("/view/{id}")
     public R<?> view(@PathVariable Long id) {
         TUser tUser = tUserService.selectById(id);
@@ -284,6 +298,7 @@ public class UserController {
     /**
      * 查询用户列表（屏蔽逻辑删除）
      */
+    @PreAuthorize("hasAuthority('user:list')")
     @GetMapping("/list")
     public R<PageInfo<TUser>> list(@RequestParam(defaultValue = "1") Integer pageNo,
                                    @RequestParam(defaultValue = "10") Integer pageSize
@@ -297,6 +312,7 @@ public class UserController {
     /**
      * 查询已登录用户
      */
+    @PreAuthorize("hasAuthority('user:current')")
     @GetMapping("/current")
     public R<?> current() {
         // 从 Spring Security 上下文获取当前认证用户
@@ -315,6 +331,7 @@ public class UserController {
      * @param id 用户ID
      * @return 角色列表
      */
+    @PreAuthorize("hasAuthority('user:list-roles')")
     @GetMapping("/list-roles/{id}")
     public R<?> listRoles(@PathVariable String id) {
         try {
@@ -331,6 +348,7 @@ public class UserController {
      * @param roleIdsDto 角色ID列表
      * @return 操作状态
      */
+    @PreAuthorize("hasAuthority('user:edit-roles')")
     @PutMapping("/edit-roles")
     public R<?> editRoles(@RequestBody RoleIdsDto roleIdsDto) {
         try {
@@ -339,6 +357,19 @@ public class UserController {
         } catch (Exception e) {
             return R.error(ResultCode.FAIL, "更新失败" + e.getMessage());
         }
+    }
+
+    /**
+     * 根据用户查询用户权限
+     *
+     * @param id 用户ID
+     * @return 权限标识符列表
+     */
+    @PreAuthorize("hasAuthority('user:list-permission')")
+    @GetMapping("/list-permission/{id}")
+    public R<?> listPermission(@PathVariable String id) {
+        List<String> permissionCodes = tUserService.queryPermissionCodes(Long.parseLong(id));
+        return null;
     }
 
     /**

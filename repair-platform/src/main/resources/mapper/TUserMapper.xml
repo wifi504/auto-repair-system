@@ -46,6 +46,15 @@
            LEFT JOIN t_role tr ON tr.id = tur.role_id
     WHERE tur.user_id = #{userId}
   </select>
+  <select id="queryPermissionCodes" resultType="java.lang.String">
+    SELECT tp.`code`
+    FROM t_user_role tur
+           LEFT JOIN t_role tr ON tur.role_id = tr.id
+           LEFT JOIN t_role_permission trp ON trp.role_id = tr.id
+           LEFT JOIN t_permission tp ON trp.permission_id = tp.id
+    WHERE tp.type = 'api'
+      AND tur.user_id = #{userId}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from t_user
     where id = #{id,jdbcType=BIGINT}
