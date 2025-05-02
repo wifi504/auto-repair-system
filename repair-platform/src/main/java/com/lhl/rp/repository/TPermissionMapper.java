@@ -18,4 +18,6 @@ public interface TPermissionMapper {
     int updateByPrimaryKey(TPermission record);
 
     List<TPermission> consultAllPermission();
+
+    void consultAllPermissionBySuperAdmin();
 }

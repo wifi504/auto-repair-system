@@ -27,4 +27,9 @@ public interface TPermissionService {
      * @return 权限列表
      */
     List<TPermissionServiceImpl.PermissionNode> consultAllPermissionByTree();
+
+    /**
+     * 超管取得所有权限
+     */
+    void consultAllPermissionBySuperAdmin();
 }

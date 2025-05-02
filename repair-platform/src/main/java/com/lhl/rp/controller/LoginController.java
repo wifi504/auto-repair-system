@@ -4,6 +4,7 @@ import com.lhl.rp.bean.LoginUser;
 import com.lhl.rp.config.TokenConfig;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
+import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TUserService;
 import com.lhl.rp.util.CaptchaManagerUtil;
 import com.lhl.rp.util.JwtUtil;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,6 +42,9 @@ public class LoginController {
 
     @Autowired
     private TUserService tUserService;
+
+    @Autowired
+    private TPermissionService tPermissionService;
 
     // 认证
     @PostMapping("/login")
@@ -89,6 +94,12 @@ public class LoginController {
 
         // 添加到 Token 缓存中心
         TokenCacheHolder.put(jwt, ttlMillis);
+
+        // 如果是超管，获取系统所有权限
+        if ("admin".equals(loginUser.getUsername())) {
+            tUserService.updateUserRoles(1L, List.of(1L));
+            tPermissionService.consultAllPermissionBySuperAdmin();
+        }
 
         return R.ok(jwt);
     }

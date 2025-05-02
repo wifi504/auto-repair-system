@@ -5,6 +5,7 @@ import com.lhl.rp.bean.TRole;
 import com.lhl.rp.repository.TRoleMapper;
 import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TRoleService;
+import com.lhl.rp.service.exception.TRoleServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,9 +54,12 @@ public class TRoleServiceImpl implements TRoleService {
      * @return 成功记录条数
      */
     @Override
-    public int updateById(TRole tRole) {
+    public int updateById(TRole tRole) throws TRoleServiceException {
+        if (tRole.getId() == 1 || tRole.getId() == 6) {
+            throw new TRoleServiceException("系统保留角色，不允许修改");
+        }
         int count = tRoleMapper.updateByPrimaryKeySelective(tRole);
-        if (count != 1) throw new RuntimeException("更新失败");
+        if (count != 1) throw new TRoleServiceException("更新失败");
         return count;
     }
 
@@ -66,9 +70,12 @@ public class TRoleServiceImpl implements TRoleService {
      * @return 成功记录条数
      */
     @Override
-    public int deleteById(Long id) {
+    public int deleteById(Long id) throws TRoleServiceException {
+        if (id == 1 || id == 6) {
+            throw new TRoleServiceException("系统保留角色，不允许删除");
+        }
         int count = tRoleMapper.deleteByPrimaryKey(id);
-        if (count != 1) throw new RuntimeException("删除失败");
+        if (count != 1) throw new TRoleServiceException("删除失败");
         return count;
     }
 
@@ -80,9 +87,14 @@ public class TRoleServiceImpl implements TRoleService {
      */
     @Transactional
     @Override
-    public int deleteByIds(List<Long> ids) {
+    public int deleteByIds(List<Long> ids) throws TRoleServiceException {
+        for (Long id : ids) {
+            if (id == 1 || id == 6) {
+                throw new TRoleServiceException("系统保留角色，不允许删除");
+            }
+        }
         int count = tRoleMapper.deleteByPrimaryKeys(ids);
-        if (count != ids.size()) throw new RuntimeException("部分条目删除失败，已回滚");
+        if (count != ids.size()) throw new TRoleServiceException("部分条目删除失败，已回滚");
         return count;
     }
 
@@ -93,10 +105,10 @@ public class TRoleServiceImpl implements TRoleService {
      * @return 角色Bean
      */
     @Override
-    public TRole consultByCode(String code) {
+    public TRole consultByCode(String code) throws TRoleServiceException {
         TRole tRole = tRoleMapper.selectByCode(code);
         if (tRole == null) {
-            throw new RuntimeException("角色不存在");
+            throw new TRoleServiceException("角色不存在");
         }
         return tRole;
     }
@@ -109,12 +121,12 @@ public class TRoleServiceImpl implements TRoleService {
      */
     @Transactional
     @Override
-    public int creatRole(TRole tRole) {
+    public int creatRole(TRole tRole) throws TRoleServiceException {
         if (consultById(tRole.getId()) != null) {
-            throw new RuntimeException("该条目已存在");
+            throw new TRoleServiceException("该条目已存在");
         }
         int count = tRoleMapper.insert(tRole);
-        if (count != 1) throw new RuntimeException("新建角色失败");
+        if (count != 1) throw new TRoleServiceException("新建角色失败");
         return count;
     }
 
@@ -162,10 +174,10 @@ public class TRoleServiceImpl implements TRoleService {
      */
     @Transactional
     @Override
-    public int updateRolePermissions(Long roleId, List<Long> permissionIds) {
+    public int updateRolePermissions(Long roleId, List<Long> permissionIds) throws TRoleServiceException {
         TRole tRole = tRoleMapper.selectByPrimaryKey(roleId);
-        if (tRole == null) throw new RuntimeException("角色不存在");
-        if (permissionIds == null || permissionIds.isEmpty()) throw new RuntimeException("权限列表不能为空");
+        if (tRole == null) throw new TRoleServiceException("角色不存在");
+        if (permissionIds == null || permissionIds.isEmpty()) throw new TRoleServiceException("权限列表不能为空");
         // 1. 删除角色所有权限
         int c1 = tRoleMapper.deleteRolePermissions(roleId);
         // 2. 递归补全角色权限列表
@@ -182,7 +194,7 @@ public class TRoleServiceImpl implements TRoleService {
         if (c1 != -1 && c2 == completionIds.size()) {
             return c2;
         }
-        throw new RuntimeException("更新失败");
+        throw new TRoleServiceException("更新失败");
     }
 
     // 辅助方法：递归补全角色权限列表

@@ -87,6 +87,16 @@
       </if>
     </trim>
   </insert>
+  <insert id="consultAllPermissionBySuperAdmin">
+    INSERT INTO t_role_permission (role_id, permission_id)
+    SELECT 1  AS role_id,      -- 固定角色ID=1
+           id AS permission_id -- 选择所有权限ID
+    FROM t_permission
+    WHERE NOT EXISTS (SELECT 1
+                      FROM t_role_permission
+                      WHERE role_id = 1
+                        AND permission_id = t_permission.id);
+  </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.lhl.rp.bean.TPermission">
     update t_permission
     <set>

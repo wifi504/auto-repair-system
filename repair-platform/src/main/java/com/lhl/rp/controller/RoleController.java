@@ -9,6 +9,7 @@ import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TRoleService;
+import com.lhl.rp.service.exception.TRoleServiceException;
 import com.lhl.rp.service.impl.TPermissionServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,7 +58,11 @@ public class RoleController {
         tRole.setCode(roleDto.getCode());
         tRole.setRemark(roleDto.getRemark());
         tRole.setOrderNum(roleDto.getOrderNum());
-        return R.ok(null, "成功更新" + tRoleService.updateById(tRole) + "条数据！");
+        try {
+            return R.ok(null, "成功更新" + tRoleService.updateById(tRole) + "条角色数据！");
+        } catch (TRoleServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
+        }
     }
 
     /**
@@ -66,16 +71,20 @@ public class RoleController {
     @PreAuthorize("hasAuthority('role:delete')")
     @DeleteMapping("/delete")
     public R<?> delete(@RequestBody List<RoleDto> roleDtoList) {
-        int count = -1;
-        if (roleDtoList.size() == 1) {
-            count = tRoleService.deleteById(roleDtoList.get(0).getId());
-        } else {
-            // 批量删除
-            List<Long> ids = new ArrayList<>();
-            roleDtoList.forEach(roleDto -> ids.add(roleDto.getId()));
-            count = tRoleService.deleteByIds(ids);
+        try {
+            int count;
+            if (roleDtoList.size() == 1) {
+                count = tRoleService.deleteById(roleDtoList.get(0).getId());
+            } else {
+                // 批量删除
+                List<Long> ids = new ArrayList<>();
+                roleDtoList.forEach(roleDto -> ids.add(roleDto.getId()));
+                count = tRoleService.deleteByIds(ids);
+            }
+            return R.ok(null, "成功删除" + count + "条角色数据！");
+        } catch (TRoleServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
         }
-        return R.ok(null, "成功删除" + count + "条数据！");
     }
 
 
@@ -91,9 +100,13 @@ public class RoleController {
                 .remark(roleDto.getRemark())
                 .orderNum(roleDto.getOrderNum())
                 .build();
-        tRoleService.creatRole(newRole);
-        TRole tRole = tRoleService.consultByCode(newRole.getCode());
-        return R.ok(tRole, "成功创建角色：" + tRole.getName() + "！");
+        try {
+            tRoleService.creatRole(newRole);
+            TRole tRole = tRoleService.consultByCode(newRole.getCode());
+            return R.ok(tRole, "成功创建角色：" + tRole.getName() + "！");
+        } catch (TRoleServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
+        }
     }
 
     /**

@@ -312,22 +312,6 @@ public class UserController {
     }
 
     /**
-     * 查询已登录用户
-     */
-    @PreAuthorize("hasAuthority('user:current')")
-    @GetMapping("/current")
-    public R<?> current() {
-        // 从 Spring Security 上下文获取当前认证用户
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !(authentication.getPrincipal() instanceof LoginUser loginUser)) {
-            return R.error(ResultCode.UNAUTHORIZED);
-        }
-
-        return R.ok(loginUser.getTUser());
-    }
-
-    /**
      * 根据用户查询用户角色
      *
      * @param id 用户ID

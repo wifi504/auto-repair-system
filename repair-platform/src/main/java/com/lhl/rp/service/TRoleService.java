@@ -2,6 +2,7 @@ package com.lhl.rp.service;
 
 import com.lhl.rp.bean.TPermission;
 import com.lhl.rp.bean.TRole;
+import com.lhl.rp.service.exception.TRoleServiceException;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public interface TRoleService {
      * @param tRole 携带id信息的角色Bean
      * @return 成功记录条数
      */
-    int updateById(TRole tRole);
+    int updateById(TRole tRole) throws TRoleServiceException;
 
     /**
      * 通过ID删除角色信息
@@ -43,7 +44,7 @@ public interface TRoleService {
      * @param id 主键ID
      * @return 成功记录条数
      */
-    int deleteById(Long id);
+    int deleteById(Long id) throws TRoleServiceException;
 
     /**
      * 通过ID集合批量删除角色信息
@@ -51,7 +52,7 @@ public interface TRoleService {
      * @param ids 主键ID List集合
      * @return 成功记录条数
      */
-    int deleteByIds(List<Long> ids);
+    int deleteByIds(List<Long> ids) throws TRoleServiceException;
 
 
     /**
@@ -60,7 +61,7 @@ public interface TRoleService {
      * @param code 角色标识符
      * @return 角色Bean
      */
-    TRole consultByCode(String code);
+    TRole consultByCode(String code) throws TRoleServiceException;
 
     /**
      * 创建角色
@@ -68,7 +69,7 @@ public interface TRoleService {
      * @param tRole 角色Bean
      * @return 成功记录条数
      */
-    int creatRole(TRole tRole);
+    int creatRole(TRole tRole) throws TRoleServiceException;
 
     /**
      * 根据角色查询角色权限
@@ -93,5 +94,5 @@ public interface TRoleService {
      * @param permissionIds 权限ID列表
      * @return 更新记录条数
      */
-    int updateRolePermissions(Long roleId, List<Long> permissionIds);
+    int updateRolePermissions(Long roleId, List<Long> permissionIds) throws TRoleServiceException;
 }

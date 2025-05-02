@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -155,17 +156,20 @@ public class TUserServiceImpl implements TUserService {
     public int updateUserRoles(Long userId, List<Long> roleIds) {
         TUser tUser = tUserMapper.selectByPrimaryKey(userId);
         if (tUser == null) throw new RuntimeException("用户不存在");
-        if (roleIds == null || roleIds.isEmpty()) {
+        List<Long> ids = new ArrayList<>();
+        if (roleIds != null) {
+            ids.addAll(roleIds);
+        }
+        if (ids.isEmpty() || !ids.contains(6L)) {
             // TODO 默认添加游客角色的id，但是这种操作并没有考虑到角色表的动态性
-            roleIds = new java.util.ArrayList<>();
-            roleIds.add(6L);
+            ids.add(6L);
         }
         // 1. 删除用户所有角色
         int c1 = tUserMapper.deleteUserRoles(userId);
         // 2. 添加用户角色
-        int c2 = tUserMapper.addUserRoles(userId, roleIds);
+        int c2 = tUserMapper.addUserRoles(userId, ids);
         // 3. 检查是否成功
-        if (c1 != -1 && c2 == roleIds.size()) {
+        if (c1 != -1 && c2 == ids.size()) {
             return c2;
         }
         throw new RuntimeException("更新失败");

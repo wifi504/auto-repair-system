@@ -1,6 +1,7 @@
 package com.lhl.rp.service;
 
 import com.lhl.rp.bean.TPermission;
+import com.lhl.rp.service.exception.TRoleServiceException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +36,7 @@ public class TRoleServiceImplTest {
     }
 
     @Test
-    public void testUpdateRolePermissions() {
+    public void testUpdateRolePermissions() throws TRoleServiceException {
         List<Long> permissionIds = List.of(10101L, 10102L, 10103L);
         int count = tRoleService.updateRolePermissions(2L, permissionIds);
     }

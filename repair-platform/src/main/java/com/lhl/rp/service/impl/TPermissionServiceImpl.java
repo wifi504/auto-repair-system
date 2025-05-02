@@ -57,6 +57,14 @@ public class TPermissionServiceImpl implements TPermissionService {
         return roots;
     }
 
+    /**
+     * 超管取得所有权限
+     */
+    @Override
+    public void consultAllPermissionBySuperAdmin() {
+        tPermissionMapper.consultAllPermissionBySuperAdmin();
+    }
+
     @Data
     @Builder
     public static class PermissionNode {
