@@ -115,17 +115,24 @@ const submit = async () => {
   if (dialogFormRef.value) {
     await dialogFormRef.value.validate(async (valid) => {
       if (valid) {
+        // 修改角色信息
         try {
-          const res2 = await request.put('/role/edit-permission', {
+          const res = await request.put('/role/update', dialogEditData.value)
+          ElMessage.success(`${res.msg || 'success'}`)
+          refreshTableData()
+        } catch (err) {
+          ElMessage.error(`修改角色信息：${err.msg}`)
+        }
+        // 修改角色权限
+        try {
+          const res = await request.put('/role/edit-permission', {
             roleId: dialogEditData.value.id,
             idList: permissionsSelectedData.value
           })
-          const res1 = await request.put('/role/update', dialogEditData.value)
-          const msg = res1.msg + "；" + res2.msg
-          ElMessage.success(`提交成功：${msg || 'success'}`)
+          ElMessage.success(`${res.msg || 'success'}`)
           refreshTableData()
-        } catch (e) {
-          ElMessage.error(`提交失败：${e.msg || 'error'}`)
+        } catch (err) {
+          ElMessage.error(`修改角色权限：${err.msg || 'error'}`)
         } finally {
           showDialog.value = false
         }

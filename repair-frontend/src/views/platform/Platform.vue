@@ -1,6 +1,8 @@
 <template>
+  <!-- 切换面板 -->
+  <panel-switcher v-if="showSwitchPanel" @switch="handleSwitchPanel"/>
   <!-- 管理系统统一页面 -->
-  <el-container>
+  <el-container v-else>
     <!-- 左侧菜单 -->
     <el-aside width="240px">
       <platform-menu/>
@@ -8,7 +10,7 @@
     <el-container>
       <!-- 头部 -->
       <el-header height="60px">
-        <container-header/>
+        <container-header :current-page-type="pageType" @switch="handleSwitchPanel"/>
       </el-header>
       <!-- 面板内容 -->
       <el-main>
@@ -33,8 +35,23 @@
 </template>
 
 <script setup>
+import {ref} from "vue";
+import {useRouter} from "vue-router";
 import PlatformMenu from "@/components/platform/PlatformMenu.vue";
 import ContainerHeader from "@/components/platform/ContainerHeader.vue";
+import PanelSwitcher from "@/components/platform/PanelSwitcher.vue";
+
+const router = useRouter()
+
+// 显示切换面板
+const showSwitchPanel = ref(false)
+const handleSwitchPanel = (page) => {
+  router.push('/platform/home')
+  pageType.value = page || 'user'
+  showSwitchPanel.value = !showSwitchPanel.value
+}
+// platform merchant user
+const pageType = ref('user')
 </script>
 
 <style scoped>

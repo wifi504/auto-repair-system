@@ -3,9 +3,9 @@
   <div class="header-wrapper">
     <div class="header-left">
       <el-icon size="30px" :color="'#1067c9'" style="margin-right: 5px">
-        <component :is="iconMap[titleData[currentPageType].icon]"/>
+        <component :is="iconMap[titleData[props.currentPageType].icon]"/>
       </el-icon>
-      <h2>{{ titleData[currentPageType].title }}</h2>
+      <h2>{{ titleData[props.currentPageType].title }}</h2>
     </div>
     <div class="header-right">
       <div class="avatar-pop-wrapper">
@@ -46,21 +46,12 @@
             </template>
           </el-divider>
           <!-- 卡片操作按钮 -->
-          <el-dropdown style="width: 100%" trigger="click">
-            <el-button class="card-action-btn" text :icon="Switch" @click="switchPanel">切换面板</el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="currentPageType = 'platform'">{{ titleData.platform.name }}</el-dropdown-item>
-                <el-dropdown-item @click="currentPageType = 'merchant'">{{ titleData.merchant.name }}</el-dropdown-item>
-                <el-dropdown-item @click="currentPageType = 'user'">{{ titleData.user.name }}</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <el-button class="card-action-btn" text :icon="Switch" @click="emit('switch')">切换面板</el-button>
           <el-button class="card-action-btn" text :icon="User">个人中心</el-button>
           <el-button class="card-action-btn" text :icon="SwitchButton" @click="logout">退出登录</el-button>
         </div>
       </div>
-      <div>当前面板：{{ titleData[currentPageType].name }}</div>
+      <div>当前面板：{{ titleData[props.currentPageType].name }}</div>
       <div class="current-time">
         {{ formattedDateTime }}
       </div>
@@ -100,8 +91,15 @@ const titleData = {
   }
 }
 
-// 当前页面
-const currentPageType = ref('user')
+const props = defineProps({
+  // 当前页面
+  currentPageType: {
+    type: String,
+    default: 'user'
+  }
+})
+
+const emit = defineEmits(['switch'])
 
 // 当前登录用户展示
 const currentLoginUser = ref({})
@@ -109,7 +107,7 @@ const currentLoginUserAvatar = ref('')
 // 获取当前登录用户
 const loadCurrentLoginUser = async () => {
   try {
-    const res = await request.get('/user/current')
+    const res = await request.get('/profile/me')
     currentLoginUser.value = res.data
     currentLoginUserAvatar.value = res.data.avatarUrl
   } catch (err) {
@@ -178,10 +176,6 @@ const avatarCardLeave = () => {
 const router = useRouter()
 const logout = () => {
   router.push('/logout')
-}
-// 切换面板
-const switchPanel = () => {
-  //...
 }
 </script>
 

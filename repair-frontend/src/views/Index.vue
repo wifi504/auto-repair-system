@@ -40,7 +40,7 @@ const userDetail = ref({})
 
 onMounted(async () => {
   try {
-    userDetail.value = await request.get('user/current')
+    userDetail.value = await request.get('profile/me')
     console.log(userDetail.value)
     hasLogin.value = true
   } catch (error) {
