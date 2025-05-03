@@ -5,7 +5,7 @@
   <el-container v-else>
     <!-- 左侧菜单 -->
     <el-aside width="240px">
-      <platform-menu/>
+      <platform-menu :menu-data="menuData"/>
     </el-aside>
     <el-container>
       <!-- 头部 -->
@@ -35,23 +35,51 @@
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {ref, onMounted} from "vue";
 import {useRouter} from "vue-router";
 import PlatformMenu from "@/components/platform/PlatformMenu.vue";
 import ContainerHeader from "@/components/platform/ContainerHeader.vue";
 import PanelSwitcher from "@/components/platform/PanelSwitcher.vue";
+import request from "@/utils/request.js";
+import {ElMessage} from "element-plus";
 
 const router = useRouter()
 
 // 显示切换面板
 const showSwitchPanel = ref(false)
-const handleSwitchPanel = (page) => {
-  router.push('/platform/home')
-  pageType.value = page || 'user'
+// platform merchant customer
+const pageType = ref('loading')
+// 菜单数据
+const menuData = ref([])
+// 处理切换
+const handleSwitchPanel = (data) => {
+  router.push('/platform/overview')
+  if (data) {
+    pageType.value = data.name
+    menuData.value = data.menus
+  }
   showSwitchPanel.value = !showSwitchPanel.value
 }
-// platform merchant user
-const pageType = ref('user')
+// 加载当前用户选择的菜单，如果没有，就让用户选择
+const currentPanel = localStorage.getItem('default-panel')
+const loadMenu = async () => {
+  if (currentPanel) {
+    try {
+      const res = await request.get('/profile/panel')
+      const panel = res.data.find(datum => datum.name === currentPanel)
+      pageType.value = panel.name.toLowerCase()
+      menuData.value = panel.menus
+    } catch (err) {
+      ElMessage.error(`获取菜单列表：${err.msg || 'Error'}`)
+    }
+  } else {
+    showSwitchPanel.value = true
+  }
+}
+
+onMounted(() => {
+  loadMenu()
+})
 </script>
 
 <style scoped>

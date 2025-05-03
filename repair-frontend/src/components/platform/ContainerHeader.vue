@@ -47,7 +47,7 @@
           </el-divider>
           <!-- 卡片操作按钮 -->
           <el-button class="card-action-btn" text :icon="Switch" @click="emit('switch')">切换面板</el-button>
-          <el-button class="card-action-btn" text :icon="User">个人中心</el-button>
+          <el-button class="card-action-btn" text :icon="User" @click="navigateToMyAccount">个人中心</el-button>
           <el-button class="card-action-btn" text :icon="SwitchButton" @click="logout">退出登录</el-button>
         </div>
       </div>
@@ -63,13 +63,16 @@
 import {ref, onMounted, onBeforeUnmount} from "vue";
 import {useRouter} from "vue-router";
 import request from "@/utils/request.js";
-import {Promotion, Shop, Flag, Message, User, SwitchButton, Switch} from '@element-plus/icons-vue'
+import {
+  Promotion, Shop, Flag, Message, User,
+  SwitchButton, Switch, Refresh
+} from '@element-plus/icons-vue'
 import AsyncAvatar from "@/components/common/AsyncAvatar.vue";
 import {ElMessage} from "element-plus";
 
 // 图标映射
 const iconMap = {
-  Promotion, Shop, Flag
+  Promotion, Shop, Flag, Refresh
 }
 
 // 标题数据
@@ -84,10 +87,15 @@ const titleData = {
     icon: 'Shop',
     name: '商户端'
   },
-  user: {
+  customer: {
     title: '让爱车焕然一新，安心出行每一天',
     icon: 'Flag',
     name: '客户端'
+  },
+  loading: {
+    title: '加载中...',
+    icon: 'Refresh',
+    name: '加载中...'
   }
 }
 
@@ -95,7 +103,7 @@ const props = defineProps({
   // 当前页面
   currentPageType: {
     type: String,
-    default: 'user'
+    default: 'loading'
   }
 })
 
@@ -172,8 +180,14 @@ const avatarCardLeave = () => {
   }
 }
 
-// 退出登录
 const router = useRouter()
+// 个人中心
+const navigateToMyAccount = () => {
+  localStorage.setItem('default-panel', 'CUSTOMER')
+  localStorage.setItem('require-redirect', '/platform/profile/account')
+  window.location.reload()
+}
+// 退出登录
 const logout = () => {
   router.push('/logout')
 }
@@ -243,9 +257,9 @@ const logout = () => {
 
 .card-action-btn {
   width: 100%;
-  border: 1px solid #e7e7e7;
-  color: #707070;
-  margin: 5px 0 0 0;
+  border: 1px solid #e7e7e7 !important;
+  color: #707070 !important;
+  margin: 5px 0 0 0 !important;
 }
 
 .current-time {

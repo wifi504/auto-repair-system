@@ -13,7 +13,7 @@
         <img src="@/assets/image/banner-white-small.png" alt="banner">
       </el-menu-item>
       <!-- 渲染菜单项 -->
-      <template v-for="item in menuData" :key="item.index">
+      <template v-for="item in prop.menuData" :key="item.index">
         <!-- 有子菜单时 -->
         <el-sub-menu v-if="item.children" :index="item.index">
           <template #title>
@@ -54,11 +54,10 @@
 </template>
 
 <script setup>
-import {reactive} from "vue"
 import {useRouter, useRoute} from "vue-router"
 import {
   Menu, Monitor, User, OfficeBuilding,
-  Avatar, Document, Ticket, Tools
+  Avatar, Document, Ticket, Tools, FolderOpened
 } from "@element-plus/icons-vue"
 
 const router = useRouter()
@@ -73,7 +72,8 @@ const iconMap = {
   Avatar,
   Document,
   Ticket,
-  Tools
+  Tools,
+  FolderOpened
 }
 
 // 从映射表获取图标组件
@@ -83,68 +83,12 @@ const getIconComponent = (iconName) => {
 
 // 菜单数据示例Data
 // {index, title, icon, children, disabled}
-const menuData = reactive([
-  {
-    index: 'home',
-    title: '概览',
-    icon: 'Monitor'
-  },
-  {
-    index: 'manager',
-    title: '系统管理',
-    icon: 'Tools',
-    children: [
-      {
-        index: 'manager/role',
-        title: '角色管理',
-      },
-      {
-        index: 'manager/user',
-        title: '用户管理',
-      }
-    ]
-  },
-  {
-    index: '3',
-    title: '商铺管理',
-    icon: 'OfficeBuilding',
-    children: [
-      {
-        index: '3-1',
-        title: '商铺列表查询'
-      },
-      {
-        index: '3-2',
-        title: '商铺开设/注销审核'
-      }
-    ]
-  },
-  {
-    index: '4',
-    title: '商家管理',
-    icon: 'Avatar',
-    children: [
-      {
-        index: '4-1',
-        title: '商家列表'
-      },
-      {
-        index: '4-2',
-        title: '商家资质审核'
-      }
-    ]
-  },
-  {
-    index: '5',
-    title: '订单管理',
-    icon: 'Document'
-  },
-  {
-    index: '6',
-    title: '工单管理',
-    icon: 'Ticket'
+const prop = defineProps({
+  menuData: {
+    type: Array,
+    default: []
   }
-])
+})
 </script>
 
 <style scoped>

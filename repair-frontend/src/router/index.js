@@ -25,11 +25,11 @@ const routes = [
   {
     path: '/platform',
     component: () => import('@/views/platform/Platform.vue'),
-    redirect: '/platform/home',
+    redirect: '/platform/overview',
     children: [
       {
-        path: 'home',
-        component: () => import('@/views/platform/NotFound.vue'),
+        path: 'overview',
+        component: () => import('@/views/platform/Overview.vue'),
         meta: {
           title: '概览'
         }
