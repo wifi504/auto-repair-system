@@ -51,6 +51,11 @@ public class TPermission implements Serializable {
     private String url;
 
     /**
+     * 前端/platform下路由地址
+     */
+    private String route;
+
+    /**
      * 菜单图标
      */
     private String icon;

@@ -98,7 +98,7 @@ public class LoginController {
         // 如果是超管，获取系统所有权限
         if ("admin".equals(loginUser.getUsername())) {
             tUserService.updateUserRoles(1L, List.of(1L));
-            tPermissionService.consultAllPermissionBySuperAdmin();
+            tPermissionService.applyAllPermissionForSuperAdmin();
         }
 
         return R.ok(jwt);

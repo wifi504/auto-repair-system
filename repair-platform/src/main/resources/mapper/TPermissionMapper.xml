@@ -9,10 +9,11 @@
     <result column="order_num" jdbcType="INTEGER" property="orderNum" />
     <result column="type" jdbcType="OTHER" property="type" />
     <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="route" jdbcType="VARCHAR" property="route" />
     <result column="icon" jdbcType="VARCHAR" property="icon" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, `name`, parent_id, code, order_num, `type`, url, icon
+    id, `name`, parent_id, code, order_num, `type`, url, route, icon
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
@@ -32,11 +33,10 @@
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.lhl.rp.bean.TPermission" useGeneratedKeys="true">
     insert into t_permission (`name`, parent_id, code, 
-      order_num, `type`, url, 
-      icon)
+      order_num, `type`, url, route, icon)
     values (#{name,jdbcType=VARCHAR}, #{parentId,jdbcType=BIGINT}, #{code,jdbcType=VARCHAR}, 
       #{orderNum,jdbcType=INTEGER}, #{type,jdbcType=OTHER}, #{url,jdbcType=VARCHAR}, 
-      #{icon,jdbcType=VARCHAR})
+      #{route,jdbcType=VARCHAR}, #{icon,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.lhl.rp.bean.TPermission" useGeneratedKeys="true">
     insert into t_permission
@@ -58,6 +58,9 @@
       </if>
       <if test="url != null">
         url,
+      </if>
+      <if test="route != null">
+        route,
       </if>
       <if test="icon != null">
         icon,
@@ -81,6 +84,9 @@
       </if>
       <if test="url != null">
         #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="route != null">
+        #{route,jdbcType=VARCHAR},
       </if>
       <if test="icon != null">
         #{icon,jdbcType=VARCHAR},
@@ -118,6 +124,9 @@
       <if test="url != null">
         url = #{url,jdbcType=VARCHAR},
       </if>
+      <if test="route != null">
+        url = #{route,jdbcType=VARCHAR},
+      </if>
       <if test="icon != null">
         icon = #{icon,jdbcType=VARCHAR},
       </if>
@@ -132,6 +141,7 @@
       order_num = #{orderNum,jdbcType=INTEGER},
       `type` = #{type,jdbcType=OTHER},
       url = #{url,jdbcType=VARCHAR},
+      route = #{route,jdbcType=VARCHAR},
       icon = #{icon,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>

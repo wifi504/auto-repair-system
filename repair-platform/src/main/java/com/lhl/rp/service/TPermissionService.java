@@ -31,5 +31,5 @@ public interface TPermissionService {
     /**
      * 超管取得所有权限
      */
-    void consultAllPermissionBySuperAdmin();
+    void applyAllPermissionForSuperAdmin();
 }

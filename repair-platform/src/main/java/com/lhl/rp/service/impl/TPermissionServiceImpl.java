@@ -61,7 +61,7 @@ public class TPermissionServiceImpl implements TPermissionService {
      * 超管取得所有权限
      */
     @Override
-    public void consultAllPermissionBySuperAdmin() {
+    public void applyAllPermissionForSuperAdmin() {
         tPermissionMapper.consultAllPermissionBySuperAdmin();
     }
 
