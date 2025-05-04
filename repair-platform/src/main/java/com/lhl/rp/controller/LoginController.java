@@ -1,15 +1,19 @@
 package com.lhl.rp.controller;
 
 import com.lhl.rp.bean.LoginUser;
+import com.lhl.rp.bean.TUser;
 import com.lhl.rp.config.TokenConfig;
+import com.lhl.rp.dto.UserRegisterDto;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TUserService;
+import com.lhl.rp.service.exception.TUserServiceException;
 import com.lhl.rp.util.CaptchaManagerUtil;
 import com.lhl.rp.util.JwtUtil;
 import com.lhl.rp.util.TokenCacheHolder;
 import com.lhl.rp.util.TokenUtil;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -97,7 +101,11 @@ public class LoginController {
 
         // 如果是超管，获取系统所有权限
         if ("admin".equals(loginUser.getUsername())) {
-            tUserService.updateUserRoles(1L, List.of(1L));
+            try {
+                tUserService.updateUserRoles(1L, List.of(1L));
+            } catch (TUserServiceException e) {
+                throw new RuntimeException(e.getMessage());
+            }
             tPermissionService.applyAllPermissionForSuperAdmin();
         }
 
@@ -137,5 +145,19 @@ public class LoginController {
     @GetMapping("/captcha")
     public R<Map<String, String>> getCaptcha() {
         return R.ok(CaptchaManagerUtil.generateCaptcha());
+    }
+
+    // 用户注册
+    @PostMapping("/register")
+    public R<?> register(@RequestBody UserRegisterDto userRegisterDto) {
+        // 校验验证码
+        if (!CaptchaManagerUtil.verifyCaptcha(userRegisterDto.getUuid(), userRegisterDto.getCaptcha())) {
+            return R.error(ResultCode.FAIL, "验证码错误或已失效");
+        }
+        try {
+            return R.ok(tUserService.register(userRegisterDto));
+        } catch (TUserServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
+        }
     }
 }

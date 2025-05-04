@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Objects;
@@ -46,6 +47,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public R<?> handleAccessDenied(AccessDeniedException e) {
         return R.error(ResultCode.FORBIDDEN);
+    }
+
+    // 方法参数类型不匹配异常
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public R<?> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return R.error(ResultCode.FORBIDDEN, "方法参数异常");
     }
 
     // 参数校验错误（Bean校验）

@@ -2,14 +2,22 @@ package com.lhl.rp.service.impl;
 
 import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
+import com.lhl.rp.dto.UserDto;
+import com.lhl.rp.dto.UserRegisterDto;
 import com.lhl.rp.repository.TUserMapper;
 import com.lhl.rp.service.TUserService;
+import com.lhl.rp.service.exception.TUserServiceException;
+import com.lhl.rp.util.TokenCacheHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author WIFI连接超时
@@ -21,6 +29,9 @@ public class TUserServiceImpl implements TUserService {
 
     @Autowired
     TUserMapper tUserMapper;
+
+    @Autowired
+    ApplicationContext applicationContext;
 
     /**
      * 查询所有用户
@@ -64,9 +75,9 @@ public class TUserServiceImpl implements TUserService {
      * @param id 主键
      */
     @Override
-    public int deleteById(Long id) {
+    public int deleteById(Long id) throws TUserServiceException {
         int count = tUserMapper.deleteByPrimaryKey(id);
-        if (count != 1) throw new RuntimeException("用户不存在！");
+        if (count != 1) throw new TUserServiceException("用户不存在！");
         return count;
     }
 
@@ -77,40 +88,75 @@ public class TUserServiceImpl implements TUserService {
      */
     @Transactional
     @Override
-    public int deleteByIds(List<Long> idList) {
+    public int deleteByIds(List<Long> idList) throws TUserServiceException {
         int count = tUserMapper.deleteByPrimaryKeys(idList);
-        if (count != idList.size()) throw new RuntimeException("部分条目删除失败，已回滚");
+        if (count != idList.size()) throw new TUserServiceException("部分条目删除失败，已回滚");
         return count;
     }
 
     /**
      * 增加用户
      *
-     * @param tUser 用户 Bean
+     * @param userDto 用户DTO
      */
     @Transactional
     @Override
-    public int insert(TUser tUser) {
-        if (selectById(tUser.getId()) != null) {
-            throw new RuntimeException("该用户当前已存在！");
+    public Long insert(UserDto userDto) throws TUserServiceException {
+        BCryptPasswordEncoder bCryptPasswordEncoder = applicationContext.getBean(BCryptPasswordEncoder.class);
+        if (userDto.getLoginAct() == null || userDto.getLoginAct().isEmpty()) {
+            throw new TUserServiceException("用户名不能为空");
         }
+        if (tUserMapper.selectByLoginAct(userDto.getLoginAct()) != null) {
+            throw new TUserServiceException("用户已存在");
+        }
+        TUser tUser = mappingUserDto(userDto);
+        tUser.setStatus((byte) 1);
+        if (userDto.getLoginPwd() == null || userDto.getLoginPwd().isEmpty()) {
+            tUser.setLoginPwd(bCryptPasswordEncoder.encode("pwd123456"));
+        }
+        tUser.setCreateTime(new Date());
         int count = tUserMapper.insert(tUser);
-        if (count != 1) throw new RuntimeException("数据增添失败！");
-        return count;
+        if (count != 1) throw new TUserServiceException("数据增添失败！");
+        return tUserMapper.selectByLoginAct(tUser.getLoginAct()).getId();
+    }
+
+    /**
+     * 用户注册
+     */
+    @Transactional
+    @Override
+    public Long register(UserRegisterDto userRegisterDto) throws TUserServiceException {
+        TUser tUser = mappingUserRegisterDto(userRegisterDto);
+        if (tUserMapper.selectByLoginAct(tUser.getLoginAct()) != null) {
+            throw new TUserServiceException("用户已存在");
+        }
+        tUser.setStatus((byte) 1);
+        tUser.setCreateTime(new Date());
+        if (tUserMapper.insert(tUser) != 1) {
+            throw new TUserServiceException("数据增添失败！");
+        }
+        Long id = tUserMapper.selectByLoginAct(tUser.getLoginAct()).getId();
+        updateUserRoles(id, new ArrayList<>());
+        return id;
     }
 
     /**
      * 根据主键更新用户
      *
-     * @param tUser 用户 Bean
+     * @param userDto 用户
      */
     @Override
-    public int updateById(TUser tUser) {
-        if (tUserMapper.selectByPrimaryKey(tUser.getId()) == null) {
-            throw new RuntimeException("不存在此用户！");
+    public int updateById(UserDto userDto) throws TUserServiceException {
+        TUser tUser = tUserMapper.selectByPrimaryKey(userDto.getId());
+        if (tUser == null) {
+            throw new TUserServiceException("不存在此用户！");
         }
+        tUser.setNickname(userDto.getNickname());
+        tUser.setPhone(userDto.getPhone());
+        tUser.setEmail(userDto.getEmail());
+        tUser.setAvatarUrl(userDto.getAvatarUrl());
         int count = tUserMapper.updateByPrimaryKeySelective(tUser);
-        if (count != 1) throw new RuntimeException("数据更新失败！");
+        if (count != 1) throw new TUserServiceException("数据更新失败！");
         return count;
     }
 
@@ -121,16 +167,184 @@ public class TUserServiceImpl implements TUserService {
      */
     @Transactional
     @Override
-    public int updateByIds(List<TUser> userList) {
+    public int updateByIds(List<TUser> userList) throws TUserServiceException {
         if (userList == null || userList.isEmpty()) {
-            throw new RuntimeException("条目为空");
+            throw new TUserServiceException("条目为空");
         }
         int count = 0;
         for (TUser tUser : userList) {
             count += tUserMapper.updateByPrimaryKey(tUser);
         }
-        if (count != userList.size()) throw new RuntimeException("部分条目更新失败，已回滚");
+        if (count != userList.size()) throw new TUserServiceException("部分条目更新失败，已回滚");
         return count;
+    }
+
+    /**
+     * 重置密码
+     */
+    @Transactional
+    @Override
+    public int resetPwd(Long id) throws TUserServiceException {
+        BCryptPasswordEncoder bCryptPasswordEncoder = applicationContext.getBean(BCryptPasswordEncoder.class);
+        TUser tUser = tUserMapper.selectByPrimaryKey(id);
+        if (tUser == null || tUser.getStatus() == 2) {
+            throw new TUserServiceException("用户不存在");
+        }
+        tUser.setLoginPwd(bCryptPasswordEncoder.encode("pwd123456"));
+        int count = tUserMapper.updateByPrimaryKey(tUser);
+        if (count != 1) throw new TUserServiceException("数据更新失败！");
+        return count;
+    }
+
+    /**
+     * 批量重置密码
+     */
+    @Transactional
+    @Override
+    public int resetPwdList(List<UserDto> userDtoList) throws TUserServiceException {
+        BCryptPasswordEncoder bCryptPasswordEncoder = applicationContext.getBean(BCryptPasswordEncoder.class);
+        ArrayList<TUser> tUsers = new ArrayList<>();
+        userDtoList.forEach(userDto -> tUsers.add(tUserMapper.selectByPrimaryKey(userDto.getId())));
+        tUsers.forEach(tUser -> tUser.setLoginPwd(bCryptPasswordEncoder.encode("pwd123456")));
+        int count = updateByIds(tUsers);
+        if (count != tUsers.size()) throw new TUserServiceException("部分用户重置失败，已回滚");
+        return count;
+    }
+
+    /**
+     * 封禁用户
+     */
+    @Transactional
+    @Override
+    public int banUser(Long id) throws TUserServiceException {
+        TUser tUser = tUserMapper.selectByPrimaryKey(id);
+        if (tUser == null || tUser.getStatus() != 1) {
+            throw new TUserServiceException("用户不存在或已被封禁");
+        }
+        if (tUser.getId() == 1) {
+            throw new TUserServiceException("系统管理员不可封禁");
+        }
+        tUser.setStatus((byte) 0);
+        int count = tUserMapper.updateByPrimaryKey(tUser);
+        if (count != 1) throw new TUserServiceException("执行封禁失败");
+        // 注销用户所有登录态
+        TokenCacheHolder.removeAll(tUser.getLoginAct());
+        return count;
+    }
+
+    /**
+     * 解封用户
+     */
+    @Transactional
+    @Override
+    public int unbanUser(Long id) throws TUserServiceException {
+        TUser tUser = tUserMapper.selectByPrimaryKey(id);
+        if (tUser == null || tUser.getStatus() != 0) {
+            throw new TUserServiceException("用户不存在或未被封禁");
+        }
+        tUser.setStatus((byte) 1);
+        return tUserMapper.updateByPrimaryKey(tUser);
+    }
+
+    /**
+     * 批量封禁
+     */
+    @Transactional
+    @Override
+    public int banList(List<UserDto> userDtoList) throws TUserServiceException {
+        ArrayList<TUser> tUsers = new ArrayList<>();
+        userDtoList.forEach(userDto -> {
+            // 管理员不可封禁
+            if (userDto != null && userDto.getStatus() == 1 && userDto.getId() != 1) {
+                tUsers.add(selectById(userDto.getId()));
+            }
+        });
+        AtomicInteger count = new AtomicInteger();
+        tUsers.forEach(tUser -> {
+            tUser.setStatus((byte) 0);
+            count.addAndGet(tUserMapper.updateByPrimaryKey(tUser));
+            TokenCacheHolder.removeAll(tUser.getLoginAct());
+        });
+        if (count.get() != tUsers.size()) {
+            throw new TUserServiceException("部分用户封禁失败，已回滚");
+        }
+        return count.get();
+    }
+
+    /**
+     * 批量解封
+     */
+    @Transactional
+    @Override
+    public int unbanList(List<UserDto> userDtoList) throws TUserServiceException {
+        ArrayList<TUser> tUsers = new ArrayList<>();
+        userDtoList.forEach(userDto -> {
+            if (userDto != null && userDto.getStatus() == 0) {
+                tUsers.add(selectById(userDto.getId()));
+            }
+        });
+        AtomicInteger count = new AtomicInteger();
+        tUsers.forEach(tUser -> {
+            tUser.setStatus((byte) 1);
+            count.addAndGet(tUserMapper.updateByPrimaryKey(tUser));
+        });
+        if (count.get() != tUsers.size()) {
+            throw new TUserServiceException("部分用户解封失败，已回滚");
+        }
+        return count.get();
+    }
+
+    /**
+     * 逻辑删除用户
+     */
+    @Transactional
+    @Override
+    public int removeByLogic(UserDto userDto) throws TUserServiceException {
+        TUser tUser = tUserMapper.selectByPrimaryKey(userDto.getId());
+        if (tUser == null) {
+            throw new TUserServiceException("用户不存在");
+        }
+        if (tUser.getId() == 1) {
+            throw new TUserServiceException("系统管理员不可删除");
+        }
+        if (tUser.getStatus() == 2) {
+            throw new TUserServiceException("用户已删除");
+        }
+        tUser.setStatus((byte) 2);
+        // 登出该用户
+        TokenCacheHolder.removeAll(tUser.getLoginAct());
+        return tUserMapper.updateByPrimaryKey(tUser);
+    }
+
+    /**
+     * 逻辑批量删除用户
+     */
+    @Transactional
+    @Override
+    public int removeListByLogic(List<UserDto> userDtoList) throws TUserServiceException {
+        try {
+            ArrayList<TUser> tUsers = new ArrayList<>();
+            userDtoList.forEach(userDto -> {
+                TUser tUser = tUserMapper.selectByPrimaryKey(userDto.getId());
+                if (tUser == null || tUser.getStatus() == 2) {
+                    throw new RuntimeException("部分用户不存在");
+                }
+                if (tUser.getId() == 1) {
+                    throw new RuntimeException("系统管理员不可删除！");
+                }
+                tUser.setStatus((byte) 2);
+                tUsers.add(tUser);
+            });
+            int count = updateByIds(tUsers);
+            if (count != tUsers.size()) {
+                throw new RuntimeException("部分用户删除失败，已回滚");
+            }
+            // 注销用户所有登录态
+            tUsers.forEach(tUser -> TokenCacheHolder.removeAll(tUser.getLoginAct()));
+            return count;
+        } catch (Exception e) {
+            throw new TUserServiceException(e.getMessage());
+        }
     }
 
     /**
@@ -153,9 +367,9 @@ public class TUserServiceImpl implements TUserService {
      */
     @Transactional
     @Override
-    public int updateUserRoles(Long userId, List<Long> roleIds) {
+    public int updateUserRoles(Long userId, List<Long> roleIds) throws TUserServiceException {
         TUser tUser = tUserMapper.selectByPrimaryKey(userId);
-        if (tUser == null) throw new RuntimeException("用户不存在");
+        if (tUser == null) throw new TUserServiceException("用户不存在");
         List<Long> ids = new ArrayList<>();
         if (roleIds != null) {
             ids.addAll(roleIds);
@@ -172,7 +386,7 @@ public class TUserServiceImpl implements TUserService {
         if (c1 != -1 && c2 == ids.size()) {
             return c2;
         }
-        throw new RuntimeException("更新失败");
+        throw new TUserServiceException("更新失败");
     }
 
     /**
@@ -184,5 +398,39 @@ public class TUserServiceImpl implements TUserService {
     @Override
     public List<String> queryPermissionCodes(long userId) {
         return tUserMapper.queryPermissionCodes(userId);
+    }
+
+    // 辅助方法：映射 UserDto
+    private TUser mappingUserDto(UserDto userDto) {
+        return TUser.builder()
+                .id(userDto.getId())
+                .loginAct(userDto.getLoginAct())
+                .loginPwd(userDto.getLoginPwd())
+                .realName(userDto.getRealName())
+                .nickname(userDto.getNickname())
+                .phone(userDto.getPhone())
+                .email(userDto.getEmail())
+                .avatarUrl(userDto.getAvatarUrl())
+                .status(userDto.getStatus())
+                .createTime(userDto.getCreateTime())
+                .build();
+    }
+
+    // 辅助方法：映射 UserRegisterDto
+    private TUser mappingUserRegisterDto(UserRegisterDto userRegisterDto) throws TUserServiceException {
+        if (userRegisterDto.getLoginAct() == null || userRegisterDto.getLoginAct().isEmpty()) {
+            throw new TUserServiceException("用户名不能为空！");
+        }
+        if (!userRegisterDto.getLoginPwd().equals(userRegisterDto.getConfirmPwd())) {
+            throw new TUserServiceException("两次密码不一致！");
+        }
+        BCryptPasswordEncoder bCryptPasswordEncoder = applicationContext.getBean(BCryptPasswordEncoder.class);
+        return TUser.builder()
+                .loginAct(userRegisterDto.getLoginAct().trim())
+                .loginPwd(bCryptPasswordEncoder.encode(userRegisterDto.getLoginPwd().trim()))
+                .nickname(userRegisterDto.getNickname().trim())
+                .phone(userRegisterDto.getPhone().trim())
+                .email(userRegisterDto.getEmail().trim())
+                .build();
     }
 }

@@ -42,8 +42,7 @@ public class FileUtil {
                                 .build());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("获取存储桶失败：" + e.getMessage());
+                    throw new RuntimeException("初始化对象存储失败：" + e.getMessage());
                 }
             }
         }
