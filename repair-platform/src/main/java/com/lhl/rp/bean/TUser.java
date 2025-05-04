@@ -42,6 +42,11 @@ public class TUser implements Serializable {
      */
     private String realName;
 
+    public String getRealName() {
+        if (realName == null) return null;
+        return realName.charAt(0) + "*".repeat(realName.length() - 2) + realName.charAt(realName.length() - 1);
+    }
+
     /**
      * 昵称
      */

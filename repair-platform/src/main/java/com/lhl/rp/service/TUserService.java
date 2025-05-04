@@ -61,6 +61,11 @@ public interface TUserService {
     int updateById(UserDto userDto) throws TUserServiceException;
 
     /**
+     * 根据主键更新用户
+     */
+    int updateById(TUser tUser);
+
+    /**
      * 根据主键批量更新用户
      */
     int updateByIds(List<TUser> userList) throws TUserServiceException;

@@ -2,6 +2,8 @@ package com.lhl.rp.controller;
 
 import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
+import com.lhl.rp.dto.ProfileUpdatePwdDto;
+import com.lhl.rp.dto.ProfileUserUpdateDto;
 import com.lhl.rp.result.R;
 import com.lhl.rp.result.ResultCode;
 import com.lhl.rp.service.ProfileService;
@@ -9,9 +11,7 @@ import com.lhl.rp.service.TUserService;
 import com.lhl.rp.service.exception.ProfileServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -79,6 +79,34 @@ public class ProfileController {
             return R.ok(profileService.getCurrentUserPanels());
         } catch (ProfileServiceException e) {
             return R.error(ResultCode.UNAUTHORIZED, e.getMessage());
+        }
+    }
+
+    /**
+     * 更新当前用户信息
+     */
+    @PreAuthorize("hasAuthority('profile:update')")
+    @PutMapping("/update")
+    public R<?> update(@RequestBody ProfileUserUpdateDto dto) {
+        try {
+            profileService.updateeCurrentUser(dto);
+            return R.ok(null, "更新成功");
+        } catch (ProfileServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
+        }
+    }
+
+    /**
+     * 修改当前用户密码
+     */
+    @PreAuthorize("hasAuthority('profile:edit-pwd')")
+    @PutMapping("/edit-pwd")
+    public R<?> editPwd(@RequestBody ProfileUpdatePwdDto dto) {
+        try {
+            profileService.editCurrentUserPwd(dto);
+            return R.ok(null, "修改成功");
+        } catch (ProfileServiceException e) {
+            return R.error(ResultCode.FAIL, e.getMessage());
         }
     }
 }

@@ -161,6 +161,14 @@ public class TUserServiceImpl implements TUserService {
     }
 
     /**
+     * 根据主键更新用户
+     */
+    @Override
+    public int updateById(TUser tUser) {
+        return tUserMapper.updateByPrimaryKey(tUser);
+    }
+
+    /**
      * 根据主键批量更新用户
      *
      * @param userList 用户 BeanList

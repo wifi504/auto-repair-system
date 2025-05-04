@@ -4,20 +4,27 @@ import com.lhl.rp.bean.LoginUser;
 import com.lhl.rp.bean.TPermission;
 import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
+import com.lhl.rp.dto.ProfileUpdatePwdDto;
+import com.lhl.rp.dto.ProfileUserUpdateDto;
 import com.lhl.rp.service.ProfileService;
 import com.lhl.rp.service.TPermissionService;
 import com.lhl.rp.service.TUserService;
 import com.lhl.rp.service.exception.ProfileServiceException;
+import com.lhl.rp.util.TokenCacheHolder;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author WIFI连接超时
@@ -32,6 +39,10 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Autowired
     TPermissionService tPermissionService;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
 
     /**
      * 获取当前用户信息
@@ -120,6 +131,42 @@ public class ProfileServiceImpl implements ProfileService {
         } catch (Exception e) {
             throw new ProfileServiceException(e.getMessage());
         }
+    }
+
+    /**
+     * 修改当前用户信息
+     */
+    @Transactional
+    @Override
+    public void updateeCurrentUser(ProfileUserUpdateDto dto) throws ProfileServiceException {
+        TUser tUser = tUserService.selectById(dto.getId());
+        if (tUser == null) throw new ProfileServiceException("用户不存在");
+        tUser.setNickname(dto.getNickname().trim());
+        tUser.setPhone(dto.getPhone().trim());
+        tUser.setEmail(dto.getEmail().trim());
+        tUser.setAvatarUrl(dto.getAvatarUrl().trim());
+        int count = tUserService.updateById(tUser);
+        if (count != 1) throw new ProfileServiceException("数据更新失败！");
+    }
+
+    /**
+     * 修改当前用户密码
+     */
+    @Transactional
+    @Override
+    public void editCurrentUserPwd(ProfileUpdatePwdDto dto) throws ProfileServiceException {
+        TUser tUser = tUserService.selectById(dto.getId());
+        if (tUser == null) throw new ProfileServiceException("用户不存在");
+        BCryptPasswordEncoder bCryptPasswordEncoder = applicationContext.getBean(BCryptPasswordEncoder.class);
+        if (!bCryptPasswordEncoder.matches(dto.getOldPwd(), tUser.getLoginPwd()))
+            throw new ProfileServiceException("旧密码错误！");
+        if (!Objects.equals(dto.getLoginPwd(), dto.getConfirmNewPwd()))
+            throw new ProfileServiceException("两次密码不一致！");
+        String encode = bCryptPasswordEncoder.encode(dto.getLoginPwd().trim());
+        tUser.setLoginPwd(encode);
+        int count = tUserService.updateById(tUser);
+        if (count != 1) throw new ProfileServiceException("密码修改失败！");
+        TokenCacheHolder.removeAll(tUser.getLoginAct());
     }
 
     // 面板（名称 + 菜单列表）

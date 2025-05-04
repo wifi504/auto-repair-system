@@ -2,6 +2,8 @@ package com.lhl.rp.service;
 
 import com.lhl.rp.bean.TRole;
 import com.lhl.rp.bean.TUser;
+import com.lhl.rp.dto.ProfileUpdatePwdDto;
+import com.lhl.rp.dto.ProfileUserUpdateDto;
 import com.lhl.rp.service.exception.ProfileServiceException;
 import com.lhl.rp.service.impl.ProfileServiceImpl;
 
@@ -33,4 +35,14 @@ public interface ProfileService {
      * 获取当前用户面板列表
      */
     List<?> getCurrentUserPanels() throws ProfileServiceException;
+
+    /**
+     * 修改当前用户信息
+     */
+    void updateeCurrentUser(ProfileUserUpdateDto dto) throws ProfileServiceException;
+
+    /**
+     * 修改当前用户密码
+     */
+    void editCurrentUserPwd(ProfileUpdatePwdDto dto) throws ProfileServiceException;
 }
