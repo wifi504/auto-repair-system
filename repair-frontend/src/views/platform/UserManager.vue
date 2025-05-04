@@ -244,7 +244,7 @@ const createOnce = async () => {
           isDialogLoading.value = true
           const res1 = await request.post('/user/create', dialogEditData.value)
           const res2 = await request.put('/user/edit-roles', {
-            userId: res1.data.id,
+            userId: res1.data,
             idList: rolesSelectedData.value
           })
           const msg = res1.msg + "；" + res2.msg

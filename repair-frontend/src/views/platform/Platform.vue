@@ -63,14 +63,20 @@ const handleSwitchPanel = (data) => {
 // 加载当前用户选择的菜单，如果没有，就让用户选择
 const currentPanel = localStorage.getItem('default-panel')
 const loadMenu = async () => {
+  let res
   if (currentPanel) {
     try {
-      const res = await request.get('/profile/panel')
+      res = await request.get('/profile/panel')
       const panel = res.data.find(datum => datum.name === currentPanel)
       pageType.value = panel.name.toLowerCase()
       menuData.value = panel.menus
     } catch (err) {
-      ElMessage.error(`获取菜单列表：${err.msg || 'Error'}`)
+      if (err.msg) {
+        ElMessage.error(`获取菜单列表：${err.msg}`)
+      } else {
+        pageType.value = res.data[0].name.toLowerCase()
+        menuData.value = res.data[0].menus
+      }
     }
   } else {
     showSwitchPanel.value = true

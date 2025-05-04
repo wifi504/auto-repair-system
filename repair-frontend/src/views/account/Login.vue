@@ -4,7 +4,7 @@
       <!-- Header部分，显示logo -->
       <template #header>
         <div class="header-container">
-          <img src="../../assets/image/banner-color-small.png" alt="Logo" class="logo"/>
+          <img src="@/assets/image/banner-color-small.png" alt="Logo" class="logo"/>
         </div>
       </template>
 
@@ -67,7 +67,7 @@
         <el-form-item>
           <!-- 表单按钮 -->
           <el-button class="button" type="primary" @click="onSubmit" :loading="isSubmitting">登 录</el-button>
-          <el-button class="button" type="warning" @click="" plain>立即注册</el-button>
+          <el-button class="button" type="warning" @click="router.push('/register')" plain>立即注册</el-button>
         </el-form-item>
 
         <el-form-item>
@@ -160,8 +160,7 @@ const onSubmit = () => {
         ElMessage.success('登录成功！欢迎您，'
             + jwtDecode(response.data).nickname + '！')
         localStorage.setItem('token', response.data)
-        let back = router.options.history.state.back
-        await router.push(back || '/platform')
+        await router.push('/')
       } catch (error) {
         ElMessage.error(error.msg || '登录失败，请重试')
         loginForm.captcha = ''

@@ -23,6 +23,13 @@ const routes = [
     }
   },
   {
+    path: '/register',
+    component: () => import('@/views/account/Register.vue'),
+    meta: {
+      title: '用户注册'
+    }
+  },
+  {
     path: '/platform',
     component: () => import('@/views/platform/Platform.vue'),
     redirect: '/platform/overview',
