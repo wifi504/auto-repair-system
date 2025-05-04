@@ -2,6 +2,7 @@ import {createApp} from 'vue'
 import '@/assets/css/base.css'
 import App from './App.vue'
 import router from "./router";
+import {createPinia} from "pinia";
 
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -9,6 +10,7 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as Icons from '@element-plus/icons-vue'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // 全局注册所有图标
 Object.keys(Icons).forEach((key) => {
@@ -18,4 +20,5 @@ Object.keys(Icons).forEach((key) => {
 app
   .use(router)
   .use(ElementPlus, {locale: zhCn})
+  .use(pinia)
   .mount('#app')

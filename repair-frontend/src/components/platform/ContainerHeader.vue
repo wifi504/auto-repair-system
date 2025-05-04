@@ -19,7 +19,7 @@
               class="async-avatar-div"
               type="circle"
               :size="44"
-              :avatar-name="currentLoginUserAvatar"
+              :avatar-name="currentUser.data.avatarUrl"
           />
         </div>
         <div
@@ -29,7 +29,7 @@
             :class="isHover ? '' : 'avatar-hover-card-hidden'"
         >
           <el-text type="primary" size="large">
-            {{ currentLoginUser.nickname }}
+            {{ currentUser.data.nickname }}
           </el-text>
           <el-divider style="margin: 15px 0">
             <template #default>
@@ -41,7 +41,7 @@
                 <el-icon>
                   <Message/>
                 </el-icon>
-                {{ currentLoginUser.email }}
+                {{ currentUser.data.email }}
               </el-text>
             </template>
           </el-divider>
@@ -60,15 +60,17 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount} from "vue";
+import {ref, onMounted, onBeforeUnmount, watch} from "vue";
 import {useRouter} from "vue-router";
-import request from "@/utils/request.js";
 import {
   Promotion, Shop, Flag, Message, User,
   SwitchButton, Switch, Refresh
 } from '@element-plus/icons-vue'
 import AsyncAvatar from "@/components/common/AsyncAvatar.vue";
-import {ElMessage} from "element-plus";
+import {useCurrentUserStore} from "@/stores/currentUser.js";
+
+// 当前登录用户数据
+const currentUser = useCurrentUserStore();
 
 // 图标映射
 const iconMap = {
@@ -109,24 +111,6 @@ const props = defineProps({
 
 const emit = defineEmits(['switch'])
 
-// 当前登录用户展示
-const currentLoginUser = ref({})
-const currentLoginUserAvatar = ref('')
-// 获取当前登录用户
-const loadCurrentLoginUser = async () => {
-  try {
-    const res = await request.get('/profile/me')
-    currentLoginUser.value = res.data
-    currentLoginUserAvatar.value = res.data.avatarUrl
-  } catch (err) {
-    ElMessage.error(`获取当前登录用户：${err.msg}`)
-    if (err.code === 401) {
-      await router.push('/login')
-      ElMessage.warning(`请重新登录！`)
-    }
-  }
-}
-
 // 格式化日期时间
 const currentDateTime = ref(new Date());
 let timer = null;
@@ -147,13 +131,13 @@ onMounted(async () => {
   // 实时显示时间
   updateDateTime();
   timer = setInterval(updateDateTime, 1000);
-  await loadCurrentLoginUser()
+  await currentUser.refresh()
 })
 
 // 组件卸载清空定时器
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer);
-});
+})
 
 // 鼠标悬浮在头像或者头像卡片上
 const isHover = ref(false)

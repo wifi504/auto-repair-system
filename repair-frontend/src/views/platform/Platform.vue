@@ -42,6 +42,9 @@ import ContainerHeader from "@/components/platform/ContainerHeader.vue";
 import PanelSwitcher from "@/components/platform/PanelSwitcher.vue";
 import request from "@/utils/request.js";
 import {ElMessage} from "element-plus";
+import {useCurrentUserStore} from "@/stores/currentUser.js";
+
+const currentUser = useCurrentUserStore()
 
 const router = useRouter()
 
@@ -83,8 +86,15 @@ const loadMenu = async () => {
   }
 }
 
-onMounted(() => {
-  loadMenu()
+onMounted(async () => {
+  // 加载当前用户信息，如果未登录则跳转登录页
+  await currentUser.forceRefresh().then(value => {
+    if (value.code === 401) {
+      ElMessage.warning('登录失效，请重新登录！')
+      router.push('/login')
+    }
+  })
+  await loadMenu()
 })
 </script>
 

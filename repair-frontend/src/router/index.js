@@ -43,16 +43,23 @@ const routes = [
       },
       {
         path: 'manager/role',
-        component: () => import('@/views/platform/RoleManager.vue'),
+        component: () => import('@/views/platform/manager/RoleManager.vue'),
         meta: {
           title: '角色管理'
         }
       },
       {
         path: 'manager/user',
-        component: () => import('@/views/platform/UserManager.vue'),
+        component: () => import('@/views/platform/manager/UserManager.vue'),
         meta: {
           title: '用户管理'
+        }
+      },
+      {
+        path: 'profile/account',
+        component: () => import('@/views/platform/profile/MyAccount.vue'),
+        meta: {
+          title: '个人中心'
         }
       },
       {
